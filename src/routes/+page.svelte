@@ -25,11 +25,11 @@
     }
 </script>
 
-<div class="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 p-8 transition-colors">
+<div class="min-h-screen bg-gradient-to-br from-purple-50 to-purple-100 dark:from-gray-900 dark:to-gray-800 p-8 transition-colors">
     <ThemeToggle />
     <div class="max-w-4xl mx-auto space-y-8">
         <header class="text-center space-y-4">
-            <h1 class="text-4xl font-bold text-blue-600 dark:text-blue-400 tracking-tight">Jacob's Dad's Ultimate Spinner!</h1>
+            <h1 class="text-4xl font-bold text-purple-600 dark:text-purple-400 tracking-tight">Jacob's Dad's Ultimate Spinner!</h1>
             <p class="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
                 This is an ad-free ultimate spinner page. You can use it for free! I did this because I hate all 
                 the ads on all the other spinner sites. This is also optimized with CSS, so it is as fast as possible.
@@ -46,10 +46,10 @@
             <button 
                 on:click={openModal}
                 aria-label="Add new spinner"
-                class="w-full sm:w-[400px] aspect-square flex items-center justify-center bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400 group"
+                class="w-full sm:w-[400px] aspect-square flex items-center justify-center bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-purple-500 dark:hover:border-purple-400 group"
             >
                 <svg 
-                    class="w-16 h-16 text-gray-400 dark:text-gray-500 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors duration-200" 
+                    class="w-16 h-16 text-gray-400 dark:text-gray-500 group-hover:text-purple-500 dark:group-hover:text-purple-400 transition-colors duration-200" 
                     fill="none" 
                     stroke="currentColor" 
                     viewBox="0 0 24 24"
@@ -92,7 +92,7 @@
                     <label class="block" for="title">
                         <span class="text-gray-700 dark:text-gray-300 font-medium mb-1 block">Title</span>
                         <input 
-                            class="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                            class="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                             type="text" 
                             id="title" 
                             placeholder="Enter spinner title"
@@ -103,7 +103,7 @@
                     <label class="block" for="items">
                         <span class="text-gray-700 dark:text-gray-300 font-medium mb-1 block">Items (comma-separated)</span>
                         <input 
-                            class="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                            class="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                             type="text" 
                             id="items" 
                             placeholder="Item 1, Item 2, Item 3"
@@ -112,7 +112,7 @@
                     </label>
                 </div>
                 <button 
-                    class="w-full bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-md transition-colors duration-200 ease-in-out transform hover:scale-105"
+                    class="w-full bg-purple-600 dark:bg-purple-500 hover:bg-purple-700 dark:hover:bg-purple-600 text-white font-semibold py-3 px-6 rounded-md transition-colors duration-200 ease-in-out transform hover:scale-105"
                     type="submit"
                 >
                     Create Spinner

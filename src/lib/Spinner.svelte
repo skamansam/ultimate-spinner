@@ -17,7 +17,7 @@
 	ul.spinner {
 		all: unset;
 		aspect-ratio: 1 / 1;
-		background: var(--spinner-bg, crimson);
+		background: var(--spinner-bg, rgb(147, 51, 234));  /* purple-600 */
 		container-type: inline-size;
 		direction: ltr;
 		display: grid;
@@ -25,7 +25,7 @@
 	}
 	ul.spinner li {
 		align-content: center;
-		background: var(--spinner-item-bg, deepskyblue);
+		background: var(--spinner-item-bg, rgb(216, 180, 254));  /* purple-300 */
 		display: grid;
 		font-size: 5cqi;
 		grid-area: 1 / -1;
@@ -34,12 +34,12 @@
 		transform-origin: center right;
 		width: 50cqi;
 		rotate: calc(360deg / var(--item-count) * calc(var(--idx) - 1));
-		color: var(--spinner-text-color, black);
+		color: var(--spinner-text-color, rgb(88, 28, 135));  /* purple-800 */
 	}
 
 	:global(.dark) ul.spinner {
-		--spinner-bg: rgb(157, 23, 77);
-		--spinner-item-bg: rgb(2, 132, 199);
+		--spinner-bg: rgb(126, 34, 206);  /* purple-700 */
+		--spinner-item-bg: rgb(168, 85, 247);  /* purple-500 */
 		--spinner-text-color: white;
 	}
 </style>
