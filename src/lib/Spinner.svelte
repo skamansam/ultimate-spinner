@@ -5,7 +5,7 @@
 </script>
 
 {#if title}
-	<div style="grid-column: 1 / -1; text-align: center;">{title}</div>
+	<div class="text-gray-800 dark:text-gray-200" style="grid-column: 1 / -1; text-align: center;">{title}</div>
 {/if}
 <ul class="spinner" style="--item-count: ${items.length}; --spin-duration: ${spinDuration}ms;">
 	{#each items as item, idx}
@@ -17,7 +17,7 @@
 	ul.spinner {
 		all: unset;
 		aspect-ratio: 1 / 1;
-		background: crimson;
+		background: var(--spinner-bg, crimson);
 		container-type: inline-size;
 		direction: ltr;
 		display: grid;
@@ -25,7 +25,7 @@
 	}
 	ul.spinner li {
 		align-content: center;
-		background: deepskyblue;
+		background: var(--spinner-item-bg, deepskyblue);
 		display: grid;
 		font-size: 5cqi;
 		grid-area: 1 / -1;
@@ -34,5 +34,12 @@
 		transform-origin: center right;
 		width: 50cqi;
 		rotate: calc(360deg / var(--item-count) * calc(var(--idx) - 1));
+		color: var(--spinner-text-color, black);
+	}
+
+	:global(.dark) ul.spinner {
+		--spinner-bg: rgb(157, 23, 77);
+		--spinner-item-bg: rgb(2, 132, 199);
+		--spinner-text-color: white;
 	}
 </style>
