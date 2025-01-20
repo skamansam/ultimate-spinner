@@ -19,7 +19,10 @@ function createThemeStore() {
 
     return {
         subscribe,
-        toggle: () => update(theme => {
+        /**
+         * Toggle the theme between light and dark.
+         */
+        toggle: () => update(/** @type {"light" | "dark"} */theme => {
             const newTheme = theme === 'light' ? 'dark' : 'light';
             if (typeof window !== 'undefined') {
                 localStorage.setItem('theme', newTheme);
@@ -31,6 +34,9 @@ function createThemeStore() {
             }
             return newTheme;
         }),
+        /**
+         * @param {"light" | "dark"} value
+         */
         set: (value) => {
             if (typeof window !== 'undefined') {
                 localStorage.setItem('theme', value);

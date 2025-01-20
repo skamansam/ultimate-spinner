@@ -25,9 +25,12 @@
         items: testItemTexts.slice(0, i + 1)
     })).flat().concat([{ title: "Test 1000!", items: (new Array(1000)).fill(0).map((_, i) => `item ${i + 1}`) }]);
 	
+    /**
+     * @type {HTMLDialogElement}
+     */
     let dialog;
 
-	function handleSubmit() {
+	function addSpinner() {
 		spinners = [...spinners, { title, items: items.split(',').map((s) => s.trim()) }];
 		title = '';
 		items = '';
@@ -117,7 +120,7 @@
 		<!-- Dialog content -->
 		<div class="p-6">
 			<h2 class="mb-6 text-2xl font-bold text-gray-800 dark:text-gray-100">Create New Spinner</h2>
-			<form class="space-y-6" on:submit|preventDefault={handleSubmit}>
+			<form class="space-y-6" on:submit|preventDefault={addSpinner}>
 				<div class="space-y-4">
 					<label class="block" for="title">
 						<span class="mb-1 block font-medium text-gray-700 dark:text-gray-300">Title</span>
