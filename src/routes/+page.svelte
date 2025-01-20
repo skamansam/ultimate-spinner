@@ -4,135 +4,7 @@
 	import { onMount } from 'svelte';
 	import { theme } from '$lib/stores/theme.js';
 
-	let title = '';
-	let items = ['item One', 'item Two', 'item Three'];
-	let spinners = [
-		{
-			title: 'New Spinner!',
-			items: [
-				'item One',
-			]
-		},
-        {
-			title: 'New Spinner!',
-			items: [
-				'item One',
-				'item Two',
-			]
-		},
-
-        {
-			title: 'New Spinner!',
-			items: [
-				'item One',
-				'item Two',
-				'item Three',
-			]
-		},
-		{
-			title: 'New Spinner!',
-			items: [
-				'item One',
-				'item Two',
-				'item Three',
-				'item Four',
-			]
-		},
-		{
-			title: 'New Spinner!',
-			items: [
-				'item One',
-				'item Two',
-				'item Three',
-				'item Four',
-				'item Five',
-			]
-		},
-
-		{
-			title: 'New Spinner!',
-			items: [
-				'item One',
-				'item Two',
-				'item Three',
-				'item Four',
-				'item Five',
-				'item Six',
-			]
-		},
-		{
-			title: 'New Spinner!',
-			items: [
-				'item One',
-				'item Two',
-				'item Three',
-				'item Four',
-				'item Five',
-				'item Six',
-				'item Seven',
-			]
-		},
-		{
-			title: 'New Spinner!',
-			items: [
-				'item One',
-				'item Two',
-				'item Three',
-				'item Four',
-				'item Five',
-				'item Six',
-				'item Seven',
-				'item Eight',
-			]
-		},
-		{
-			title: 'New Spinner!',
-			items: [
-				'item One',
-				'item Two',
-				'item Three',
-				'item Four',
-				'item Five',
-				'item Six',
-				'item Seven',
-				'item Eight',
-				'item Nine',
-			]
-		},
-		{
-			title: 'New Spinner!',
-			items: [
-				'item One',
-				'item Two',
-				'item Three',
-				'item Four',
-				'item Five',
-				'item Six',
-				'item Seven',
-				'item Eight',
-				'item Nine',
-				'item Ten',
-			]
-		},
-		{
-			title: 'New Spinner!',
-			items: [
-				'item One',
-				'item Two',
-				'item Three',
-				'item Four',
-				'item Five',
-				'item Six',
-				'item Seven',
-				'item Eight',
-				'item Nine',
-				'item Ten',
-				'item Eleven',
-			]
-		},
-		{
-			title: 'New Spinner!',
-			items: [
+    const testItemTexts = [
 				'item One',
 				'item Two',
 				'item Three',
@@ -145,10 +17,15 @@
 				'item Ten',
 				'item Eleven',
 				'item Twelve'
-			]
-		}
-	];
-	let dialog;
+			];
+	let title = '';
+	let items = ['item One', 'item Two', 'item Three'];
+	let spinners = (new Array(12)).fill(0).map((_, i) => ({
+        title: `New Spinner! ${i + 1}`,
+        items: testItemTexts.slice(0, i + 1)
+    })).flat().concat([{ title: "Test 1000!", items: (new Array(1000)).fill(0).map((_, i) => `item ${i + 1}`) }]);
+	
+    let dialog;
 
 	function handleSubmit() {
 		spinners = [...spinners, { title, items: items.split(',').map((s) => s.trim()) }];
