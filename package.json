@@ -1,6 +1,11 @@
 {
 	"name": "ultimate-spinner",
-	"version": "0.0.1",
+	"version": "1.0.0",
+	"license": "MIT",
+	"author": "'Skaman Sam'uel C Tyler <skamansam@gmail.com>",
+	"description": "A Svelte component for creating a beautiful and customizable spinner.",
+	"packageManager": "pnpm",
+	"repository": "https://github.com/skamansam/ultimate-spinner",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build && npm run package",
