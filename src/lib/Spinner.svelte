@@ -1,31 +1,84 @@
 <script>
-	export let items = ["item One", "item Two", "item Three"];
+	export let items = ['item One', 'item Two', 'item Three', 'item Four'];
 	export let spinDuration = 3000;
-	export let title = "New Spinner!";
+	export let title = 'New Spinner!';
+
+	/**
+	 * @type {HTMLUListElement}
+	 */
+	let spinner;
+
+	/**
+	 * @type {Animation}
+	 */
+	let animation;
+	/**
+	 * @type {number}
+	 */
+	let previousEndDegree = 0;
+
+	function spin() {
+		if (animation) {
+			animation.cancel(); // Reset the animation if it already exists
+		}
+
+		const randomAdditionalDegrees = Math.random() * 360 + 1800;
+		const newEndDegree = previousEndDegree + randomAdditionalDegrees;
+
+		animation = spinner.animate(
+			[
+				{ transform: `rotate(${previousEndDegree}deg)` },
+				{ transform: `rotate(${newEndDegree}deg)` }
+			],
+			{
+				duration: 4000,
+				direction: 'normal',
+				easing: 'cubic-bezier(0.440, -0.205, 0.000, 1.130)',
+				fill: 'forwards',
+				iterations: 1
+			}
+		);
+
+		previousEndDegree = newEndDegree;
+	}
 </script>
 
 {#if title}
-	<div class="text-gray-800 dark:text-gray-200" style="grid-column: 1 / -1; text-align: center;">{title}</div>
+	<div class="text-gray-800 dark:text-gray-200" style="grid-column: 1 / -1; text-align: center;">
+		{title}
+	</div>
 {/if}
-<ul class="spinner" style="--item-count: ${items.length}; --spin-duration: ${spinDuration}ms;">
+<ul
+	class="spinner"
+	style="--item-count: {items.length}; --spin-duration: {spinDuration}ms;"
+	on:click={spin}
+	on:keydown={(e) => e.key === 'Enter' && spin()}
+	tabindex="0"
+	role="button"
+	aria-label="Spin the wheel"
+	bind:this={spinner}
+>
 	{#each items as item, idx}
-		<li class="item" style="--idx: ${idx};">{item}</li>
+		<li class="item" style="--idx: {idx};">{item}</li>
 	{/each}
 </ul>
 
 <style>
 	ul.spinner {
 		all: unset;
+		box-sizing: border-box;
+		font-family: system-ui, sans-serif;
 		aspect-ratio: 1 / 1;
-		background: var(--spinner-bg, rgb(147, 51, 234));  /* purple-600 */
+		background: var(--spinner-bg, rgb(147, 51, 234)); /* purple-600 */
 		container-type: inline-size;
 		direction: ltr;
 		display: grid;
 		place-content: center start;
+		clip-path: inset(0 0 0 0 round 50%);
 	}
 	ul.spinner li {
-		align-content: center;
-		background: var(--spinner-item-bg, rgb(216, 180, 254));  /* purple-300 */
+		/* align-content: center;
+		background: var(--spinner-item-bg, rgb(216, 180, 254));
 		display: grid;
 		font-size: 5cqi;
 		grid-area: 1 / -1;
@@ -34,12 +87,28 @@
 		transform-origin: center right;
 		width: 50cqi;
 		rotate: calc(360deg / var(--item-count) * calc(var(--idx) - 1));
-		color: var(--spinner-text-color, rgb(88, 28, 135));  /* purple-800 */
+		color: var(--spinner-text-color, rgb(88, 28, 135));
+		background: hsl(calc(360deg / var(--item-count) * calc(var(--idx) - 1)), 100%, 75%);
+		height: calc((2 * pi * 50cqi) / var(--item-count));
+		clip-path: polygon(0% -2%, 100% 50%, 0% 102%);
+		aspect-ratio: 1 / calc(2 * tan(180deg / var(--item-count))); */
+		align-content: center;
+		background: hsl(calc(360deg / var(--item-count) * calc(var(--idx))), 100%, 75%);
+		clip-path: polygon(0% 0, 100% 50%, 0% 100%);
+		display: grid;
+		font-size: 5cqi;
+		grid-area: 1 / -1;
+		aspect-ratio: 1 / calc(2 * tan(180deg / var(--item-count)));
+		list-style: none;
+		padding-left: 1ch;
+		rotate: calc(360deg / var(--item-count) * calc(var(--idx) - 1));
+		transform-origin: center right;
+		width: 50cqi;
 	}
 
 	:global(.dark) ul.spinner {
-		--spinner-bg: rgb(126, 34, 206);  /* purple-700 */
-		--spinner-item-bg: rgb(168, 85, 247);  /* purple-500 */
+		--spinner-bg: rgb(126, 34, 206); /* purple-700 */
+		--spinner-item-bg: rgb(168, 85, 247); /* purple-500 */
 		--spinner-text-color: white;
 	}
 </style>
