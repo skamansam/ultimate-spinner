@@ -1,10 +1,35 @@
 <script>
 	import Spinner from '$lib/Spinner.svelte';
 	import ThemeToggle from '$lib/ThemeToggle.svelte';
-	import { onMount } from 'svelte';
-	import { theme } from '$lib/stores/theme.js';
 
-    const testItemTexts = [
+	const defaultItems = 'item One\nitem Two\nitem Three\nitem Four';
+
+	let title = $state('');
+	let items = $state(defaultItems);
+	let spinners = $state([]);
+
+	/**
+	 * @type {HTMLDialogElement}
+	 */
+	let dialog;
+
+	function addSpinner() {
+		spinners = [...spinners, { title, items: items.split('\n').map((s) => s.trim()) }];
+		title = '';
+		items = defaultItems;
+		dialog?.close();
+	}
+
+	function openModal() {
+		dialog?.showModal();
+	}
+
+	function closeModal() {
+		dialog?.close();
+	}
+
+	function addTestSpinners() {
+		const testItemTexts = [
 				'item One',
 				'item Two',
 				'item Three',
@@ -18,31 +43,10 @@
 				'item Eleven',
 				'item Twelve'
 			];
-	let title = '';
-	let items = ['item One', 'item Two', 'item Three'];
-	let spinners = (new Array(12)).fill(0).map((_, i) => ({
-        title: `New Spinner! ${i + 1}`,
-        items: testItemTexts.slice(0, i + 1)
-    })).flat().concat([{ title: "Test 1000!", items: (new Array(1000)).fill(0).map((_, i) => `item ${i + 1}`) }]);
-	
-    /**
-     * @type {HTMLDialogElement}
-     */
-    let dialog;
-
-	function addSpinner() {
-		spinners = [...spinners, { title, items: items.split(',').map((s) => s.trim()) }];
-		title = '';
-		items = '';
-		dialog?.close();
-	}
-
-	function openModal() {
-		dialog?.showModal();
-	}
-
-	function closeModal() {
-		dialog?.close();
+		spinners = [...spinners, ... (new Array(12)).fill(0).map((_, i) => ({
+			title: `New Spinner! ${i + 1}`,
+			items: testItemTexts.slice(0, i + 1)
+		})).flat().concat([{ title: "Test 1000!", items: (new Array(1000)).fill(0).map((_, i) => `item ${i + 1}`) }])];
 	}
 </script>
 
@@ -125,7 +129,7 @@
 			<form class="space-y-6" on:submit|preventDefault={addSpinner}>
 				<div class="space-y-4">
 					<label class="block" for="title">
-						<span class="mb-1 block font-medium text-gray-700 dark:text-gray-300">Title</span>
+						<span class="mb-1 block font-medium text-gray-700 dark:text-gray-300">Title (optional)</span>
 						<input
 							class="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-900 placeholder-gray-500 transition-colors focus:border-purple-500 focus:ring-2 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
 							type="text"
@@ -137,15 +141,14 @@
 					</label>
 					<label class="block" for="items">
 						<span class="mb-1 block font-medium text-gray-700 dark:text-gray-300"
-							>Items (comma-separated)</span
+							>Items (one on each line)</span
 						>
-						<input
-							class="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-900 placeholder-gray-500 transition-colors focus:border-purple-500 focus:ring-2 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
-							type="text"
+						<textarea
+							class="w-full min-h-[300px] rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-900 placeholder-gray-500 transition-colors focus:border-purple-500 focus:ring-2 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
 							id="items"
-							placeholder="Item 1, Item 2, Item 3"
+							placeholder={defaultItems}
 							bind:value={items}
-						/>
+						></textarea>
 					</label>
 				</div>
 				<button

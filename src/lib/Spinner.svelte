@@ -58,11 +58,9 @@
 </script>
 
 <div class="spinner">
-	{#if title}
 		<div class="text-gray-800 dark:text-gray-200" style="grid-column: 1 / -1; text-align: center;">
-			{title}
+			{title || "New Spinner!"}
 		</div>
-	{/if}
 	<ul
 		style="--item-count: {items.length}; --spin-duration: {spinDuration}ms;"
 		on:click={spin}
