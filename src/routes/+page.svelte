@@ -55,10 +55,12 @@
 			<h1 class="text-4xl font-bold tracking-tight text-purple-600 dark:text-purple-400">
 				Jacob's Dad's Ultimate Spinner!
 			</h1>
-			<p class="mx-auto max-w-2xl text-lg text-gray-600 dark:text-gray-300">
+			<p class="mx-auto max-w-4xl text-lg text-gray-600 dark:text-gray-300">
 				This is an ad-free ultimate spinner page. You can use it for free! I did this because I hate
-				all the ads on all the other spinner sites. This is also optimized with CSS, so it is as
-				fast as possible.
+				all the ads on all the other spinner sites. This is also optimized with CSS, so it is faster than most of them.
+			</p>
+			<p class="mx-auto max-w-4xl text-lg text-gray-600 dark:text-gray-300">
+				A very special thank you to Mads Stoumann for the awesome tutorial and code: <a class="underline" href="https://dev.to/madsstoumann/wheel-of-fortune-with-css-p-pi-1ne9">Wheel of Fortune with CSS</a>.
 			</p>
 		</header>
 

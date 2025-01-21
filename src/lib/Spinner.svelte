@@ -31,7 +31,7 @@
 				{ transform: `rotate(${newEndDegree}deg)` }
 			],
 			{
-				duration: 4000,
+				duration: spinDuration,
 				direction: 'normal',
 				easing: 'cubic-bezier(0.440, -0.205, 0.000, 1.130)',
 				fill: 'forwards',
@@ -52,7 +52,7 @@
 			const finalAngle = newEndDegree % 360;
 			const normalizedAngle = normalizeAngle(finalAngle);
 			const winner = Math.floor(((normalizedAngle + offset) % 360) / segment);
-			console.log(items[winner]);
+			console.log(items[winner + 1]);
 		};
 	}
 </script>
