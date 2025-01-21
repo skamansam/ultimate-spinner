@@ -7,6 +7,7 @@
 	let title = $state('');
 	let items = $state(defaultItems);
 	let spinners = $state([]);
+	let editingSpinnerIndex = $state(-1);
 
 	/**
 	 * @type {HTMLDialogElement}
@@ -14,10 +15,27 @@
 	let dialog;
 
 	function addSpinner() {
-		spinners = [...spinners, { title, items: items.split('\n').map((s) => s.trim()) }];
+		if (editingSpinnerIndex >= 0) {
+			spinners[editingSpinnerIndex] = { title, items: items.split('\n').map((s) => s.trim()) };
+			editingSpinnerIndex = -1;
+		} else {
+			spinners = [...spinners, { title, items: items.split('\n').map((s) => s.trim()) }];
+		}
 		title = '';
 		items = defaultItems;
 		dialog?.close();
+	}
+
+	function deleteSpinner(index) {
+		spinners = spinners.filter((_, i) => i !== index);
+	}
+
+	function configureSpinner(index) {
+		const spinner = spinners[index];
+		title = spinner.title;
+		items = spinner.items.join('\n');
+		editingSpinnerIndex = index;
+		dialog?.showModal();
 	}
 
 	function openModal() {
@@ -25,6 +43,9 @@
 	}
 
 	function closeModal() {
+		title = '';
+		items = defaultItems;
+		editingSpinnerIndex = -1;
 		dialog?.close();
 	}
 
@@ -69,11 +90,16 @@
 		</header>
 
 		<div class="flex flex-wrap justify-center gap-6">
-			{#each spinners as spinner}
+			{#each spinners as spinner, i}
 				<div
 					class="w-full rounded-lg bg-white shadow-md transition-shadow duration-200 hover:shadow-lg dark:bg-gray-800 sm:w-[400px]"
 				>
-					<Spinner title={spinner.title} items={[...spinner.items]} />
+					<Spinner 
+						title={spinner.title} 
+						items={[...spinner.items]} 
+						on:delete={() => deleteSpinner(i)}
+						on:configure={() => configureSpinner(i)}
+					/>
 				</div>
 			{/each}
 			<!-- Add Spinner Button -->
@@ -134,8 +160,7 @@
 							class="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-900 placeholder-gray-500 transition-colors focus:border-purple-500 focus:ring-2 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
 							type="text"
 							id="title"
-							placeholder="Enter spinner title"
-							autofocus
+							placeholder="My Spinner"
 							bind:value={title}
 						/>
 					</label>
@@ -152,10 +177,10 @@
 					</label>
 				</div>
 				<button
-					class="w-full transform rounded-md bg-purple-600 px-6 py-3 font-semibold text-white transition-colors duration-200 ease-in-out hover:scale-105 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600"
 					type="submit"
+					class="w-full rounded-md bg-purple-600 px-4 py-2 font-medium text-white transition-colors hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:bg-purple-500 dark:hover:bg-purple-600"
 				>
-					Create Spinner
+					{editingSpinnerIndex >= 0 ? 'Update' : 'Add'} Spinner
 				</button>
 			</form>
 		</div>
