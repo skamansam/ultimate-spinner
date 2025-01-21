@@ -1,9 +1,7 @@
 <script>
 	import { createEventDispatcher } from 'svelte';
 	
-	export let items = ['item One', 'item Two', 'item Three', 'item Four'];
-	export let spinDuration = 3000;
-	export let title = 'New Spinner!';
+	let { items = ['item One', 'item Two', 'item Three', 'item Four'], spinDuration = 3000, title = 'New Spinner!' } = $props();
 
 	/**
 	 * @type {HTMLUListElement}
@@ -19,7 +17,12 @@
 	 */
 	let previousEndDegree = 0;
 
+	let currentValue = $state('');
 	const dispatch = createEventDispatcher();
+
+	function dispatchValue() {
+		dispatch('valueChange', { title: title || "New Spinner!", value: currentValue });
+	}
 
 	function spin() {
 		if (animation) {
@@ -56,7 +59,12 @@
 			const finalAngle = newEndDegree % 360;
 			const normalizedAngle = normalizeAngle(finalAngle);
 			const winner = Math.floor(((normalizedAngle + offset) % 360) / segment);
-			console.log(items[winner + 1]);
+			const newValue = items[winner + 1];
+			if (currentValue !== newValue) {
+				currentValue = newValue;
+				dispatchValue();
+			}
+			dispatch('result', { title: title || "New Spinner!", selectedItem: currentValue });
 		};
 	}
 </script>
@@ -116,7 +124,7 @@
 			height: 4cqi;
 			position: absolute;
 			place-self: start center;
-			translate: 0px 6cqi;
+			translate: 0px 10cqi;
 			scale: 1.4;
 		}
 		ul {
