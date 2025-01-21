@@ -4,7 +4,7 @@
 
 <button
     on:click={() => theme.toggle()}
-    class="fixed top-4 right-4 p-2 rounded-lg bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors"
+    class="p-2 rounded-lg bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors"
     aria-label="Toggle dark mode"
 >
     {#if $theme === 'dark'}

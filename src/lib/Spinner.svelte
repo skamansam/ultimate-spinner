@@ -24,7 +24,7 @@
 		dispatch('valueChange', { title: title || "New Spinner!", value: currentValue });
 	}
 
-	function spin() {
+	export function spin() {
 		if (animation) {
 			animation.cancel(); // Reset the animation if it already exists
 		}

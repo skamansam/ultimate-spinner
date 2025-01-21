@@ -15,6 +15,11 @@
 	 */
 	let dialog;
 
+	/**
+	 * @type {import('$lib/Spinner.svelte').default[]}
+	 */
+	let spinnerComponents = [];
+
 	function addSpinner() {
 		if (editingSpinnerIndex >= 0) {
 			spinners[editingSpinnerIndex] = { 
@@ -83,12 +88,18 @@
 			items: testItemTexts.slice(0, i + 1)
 		})).flat().concat([{ title: "Test 1000!", items: (new Array(1000)).fill(0).map((_, i) => `item ${i + 1}`) }])];
 	}
+
+	function spinAll() {
+		spinnerComponents.forEach(spinner => spinner?.spin());
+	}
 </script>
 
 <div
 	class="min-h-screen bg-gradient-to-br from-purple-50 to-purple-100 transition-colors dark:from-gray-900 dark:to-gray-800"
 >
-	<ThemeToggle />
+	<div class="absolute left-4 top-4">
+		<ThemeToggle />
+	</div>
 	<div class="flex">
 		<!-- Main Content -->
 		<main class="flex-1 p-8">
@@ -112,7 +123,7 @@
 							class="w-full rounded-lg bg-white shadow-md transition-shadow duration-200 hover:shadow-lg dark:bg-gray-800 sm:w-[400px]"
 						>
 							<Spinner 
-								index={i}
+								bind:this={spinnerComponents[i]}
 								title={spinner.title} 
 								items={[...spinner.items]} 
 								on:delete={() => deleteSpinner(i)}
@@ -147,7 +158,17 @@
 
 		<!-- Results Sidebar -->
 		<aside class="w-80 border-l border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-			<h2 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Current Values</h2>
+			<div class="mb-6 flex items-center justify-between">
+				<h2 class="text-lg font-semibold text-gray-900 dark:text-white">Current Values</h2>
+				{#if spinners.length > 0}
+					<button
+						on:click={spinAll}
+						class="rounded-md bg-purple-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:bg-purple-500 dark:hover:bg-purple-600"
+					>
+						Spin All
+					</button>
+				{/if}
+			</div>
 			{#if spinners.length === 0}
 				<p class="text-gray-500 dark:text-gray-400">No spinners added yet. Add a spinner to see its value here!</p>
 			{:else}
