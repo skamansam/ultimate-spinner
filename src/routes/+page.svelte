@@ -10,6 +10,7 @@
 	let editingSpinnerIndex = $state(-1);
 	let spinnerValues = $state([]);
 	let showStats = $state(false);
+	let activeTab = $state('values');
 
 	/**
 	 * @type {HTMLDialogElement}
@@ -192,12 +193,6 @@
 				<div class="flex gap-2">
 					{#if spinners.length > 0}
 						<button
-							on:click={toggleStats}
-							class="rounded-md bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-						>
-							{showStats ? 'Hide' : 'Show'} Stats
-						</button>
-						<button
 							on:click={spinAll}
 							class="rounded-md bg-purple-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:bg-purple-500 dark:hover:bg-purple-600"
 						>
@@ -211,19 +206,65 @@
 				<p class="text-gray-500 dark:text-gray-400">No spinners added yet. Add a spinner to see its value here!</p>
 			{:else}
 				<div class="space-y-3">
-					{#each spinners as spinner, i}
-						<div class="rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
-							<h3 class="font-medium text-gray-900 dark:text-white">{spinner.title || "New Spinner!"}</h3>
-							<p class="text-sm text-gray-600 dark:text-gray-300">
-								{spinnerValues[i]?.value || 'Not spun yet'}
-							</p>
-						</div>
-					{/each}
+					<!-- Tab Bar -->
+					<div class="border-b border-gray-200 dark:border-gray-700">
+						<nav class="-mb-px flex space-x-4" aria-label="Tabs">
+							<button
+								on:click={() => activeTab = 'values'}
+								class="whitespace-nowrap px-1 py-2 text-sm font-medium {activeTab === 'values' ? 'border-b-2 border-purple-500 text-purple-600 dark:border-purple-400 dark:text-purple-400' : 'text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'}"
+							>
+								Values
+							</button>
+							<button
+								on:click={() => activeTab = 'results'}
+								class="whitespace-nowrap px-1 py-2 text-sm font-medium {activeTab === 'results' ? 'border-b-2 border-purple-500 text-purple-600 dark:border-purple-400 dark:text-purple-400' : 'text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'}"
+							>
+								Results
+							</button>
+							<button
+								on:click={() => activeTab = 'stats'}
+								class="whitespace-nowrap px-1 py-2 text-sm font-medium {activeTab === 'stats' ? 'border-b-2 border-purple-500 text-purple-600 dark:border-purple-400 dark:text-purple-400' : 'text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'}"
+							>
+								Stats
+							</button>
+						</nav>
+					</div>
 
-					{#if showStats}
-						<div class="mt-6 border-t border-gray-200 pt-6 dark:border-gray-600">
-							<h3 class="mb-4 font-semibold text-gray-900 dark:text-white">Statistics</h3>
-							
+					<!-- Values Tab -->
+					{#if activeTab === 'values'}
+						<div class="space-y-3">
+							{#each spinners as spinner, i}
+								<div class="rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
+									<h3 class="font-medium text-gray-900 dark:text-white">{spinner.title || "New Spinner!"}</h3>
+									<p class="text-sm text-gray-600 dark:text-gray-300">
+										{spinnerValues[i]?.value || 'Not spun yet'}
+									</p>
+								</div>
+							{/each}
+						</div>
+					{/if}
+
+					<!-- Results Tab -->
+					{#if activeTab === 'results'}
+						<div class="space-y-3">
+							<div class="max-h-[calc(100vh-300px)] space-y-1 overflow-y-auto">
+								{#each getSpinResults() as [value, count]}
+									<div class="flex items-center justify-between rounded-md bg-gray-50 px-3 py-1.5 text-sm dark:bg-gray-700">
+										<span class="text-gray-700 dark:text-gray-300">{value}</span>
+										<span class="ml-2 rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-600 dark:bg-purple-900/50 dark:text-purple-300">
+											{count} {count === 1 ? 'time' : 'times'}
+										</span>
+									</div>
+								{:else}
+									<p class="text-sm text-gray-500 dark:text-gray-400">No results yet</p>
+								{/each}
+							</div>
+						</div>
+					{/if}
+
+					<!-- Stats Tab -->
+					{#if activeTab === 'stats'}
+						<div class="space-y-4">
 							<!-- Numeric Stats -->
 							{#if getNumericValues().length > 0}
 								{@const values = getNumericValues()}
@@ -250,7 +291,7 @@
 							{/if}
 
 							<!-- General Stats -->
-							<div class="mt-4 space-y-2">
+							<div class="space-y-2">
 								<div class="flex justify-between text-sm">
 									<span class="text-gray-600 dark:text-gray-300">Total Spinners:</span>
 									<span class="font-medium text-gray-900 dark:text-white">{spinners.length}</span>
@@ -262,19 +303,6 @@
 								<div class="flex justify-between text-sm">
 									<span class="text-gray-600 dark:text-gray-300">Unspun Spinners:</span>
 									<span class="font-medium text-gray-900 dark:text-white">{spinners.length - spinnerValues.filter(v => v?.value).length}</span>
-								</div>
-							</div>
-							<div class="mt-6 border-t border-gray-200 pt-4 dark:border-gray-600">
-								<h4 class="mb-3 font-medium text-gray-900 dark:text-white">Results Summary</h4>
-								<div class="max-h-48 space-y-1 overflow-y-auto">
-									{#each getSpinResults() as [value, count]}
-										<div class="flex items-center justify-between rounded-md bg-gray-50 px-3 py-1.5 text-sm dark:bg-gray-700">
-											<span class="text-gray-700 dark:text-gray-300">{value}</span>
-											<span class="ml-2 rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-600 dark:bg-purple-900/50 dark:text-purple-300">
-												{count} {count === 1 ? 'time' : 'times'}
-											</span>
-										</div>
-									{/each}
 								</div>
 							</div>
 						</div>
