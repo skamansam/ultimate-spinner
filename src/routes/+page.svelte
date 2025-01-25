@@ -9,6 +9,7 @@
 	let spinners = $state([]);
 	let editingSpinnerIndex = $state(-1);
 	let spinnerValues = $state([]);
+	let showStats = $state(false);
 
 	/**
 	 * @type {HTMLDialogElement}
@@ -92,6 +93,34 @@
 	function spinAll() {
 		spinnerComponents.forEach(spinner => spinner?.spin());
 	}
+
+	function toggleStats() {
+		showStats = !showStats;
+	}
+
+	$effect(() => {
+		// Calculate stats whenever spinnerValues changes
+		if (showStats && spinnerValues.length > 0) {
+			const numericValues = getNumericValues();
+			if (numericValues.length > 0) {
+				const total = numericValues.reduce((a, b) => a + b, 0);
+				console.log('Total of numeric values:', total);
+			}
+		}
+	});
+
+	function getSpinResults() {
+		return Object.entries(spinnerValues.reduce((acc, val) => {
+			if (val?.value) acc[val.value] = (acc[val.value] || 0) + 1;
+			return acc;
+		}, {})).sort((a, b) => b[1] - a[1]);
+	}
+
+	function getNumericValues() {
+		return spinnerValues
+			.filter(v => v?.value && !isNaN(Number(v.value)))
+			.map(v => Number(v.value));
+	}
 </script>
 
 <div
@@ -160,15 +189,24 @@
 		<aside class="w-80 border-l border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
 			<div class="mb-6 flex items-center justify-between">
 				<h2 class="text-lg font-semibold text-gray-900 dark:text-white">Current Values</h2>
-				{#if spinners.length > 0}
-					<button
-						on:click={spinAll}
-						class="rounded-md bg-purple-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:bg-purple-500 dark:hover:bg-purple-600"
-					>
-						Spin All
-					</button>
-				{/if}
+				<div class="flex gap-2">
+					{#if spinners.length > 0}
+						<button
+							on:click={toggleStats}
+							class="rounded-md bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+						>
+							{showStats ? 'Hide' : 'Show'} Stats
+						</button>
+						<button
+							on:click={spinAll}
+							class="rounded-md bg-purple-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:bg-purple-500 dark:hover:bg-purple-600"
+						>
+							Spin All
+						</button>
+					{/if}
+				</div>
 			</div>
+
 			{#if spinners.length === 0}
 				<p class="text-gray-500 dark:text-gray-400">No spinners added yet. Add a spinner to see its value here!</p>
 			{:else}
@@ -181,6 +219,66 @@
 							</p>
 						</div>
 					{/each}
+
+					{#if showStats}
+						<div class="mt-6 border-t border-gray-200 pt-6 dark:border-gray-600">
+							<h3 class="mb-4 font-semibold text-gray-900 dark:text-white">Statistics</h3>
+							
+							<!-- Numeric Stats -->
+							{#if getNumericValues().length > 0}
+								{@const values = getNumericValues()}
+								<div class="space-y-2">
+									<div class="flex justify-between text-sm">
+										<span class="text-gray-600 dark:text-gray-300">Total:</span>
+										<span class="font-medium text-gray-900 dark:text-white">{values.reduce((a, b) => a + b, 0)}</span>
+									</div>
+									<div class="flex justify-between text-sm">
+										<span class="text-gray-600 dark:text-gray-300">Average:</span>
+										<span class="font-medium text-gray-900 dark:text-white">{(values.reduce((a, b) => a + b, 0) / values.length).toFixed(2)}</span>
+									</div>
+									<div class="flex justify-between text-sm">
+										<span class="text-gray-600 dark:text-gray-300">Min:</span>
+										<span class="font-medium text-gray-900 dark:text-white">{Math.min(...values)}</span>
+									</div>
+									<div class="flex justify-between text-sm">
+										<span class="text-gray-600 dark:text-gray-300">Max:</span>
+										<span class="font-medium text-gray-900 dark:text-white">{Math.max(...values)}</span>
+									</div>
+								</div>
+							{:else}
+								<p class="text-sm text-gray-500 dark:text-gray-400">No numeric values to calculate stats</p>
+							{/if}
+
+							<!-- General Stats -->
+							<div class="mt-4 space-y-2">
+								<div class="flex justify-between text-sm">
+									<span class="text-gray-600 dark:text-gray-300">Total Spinners:</span>
+									<span class="font-medium text-gray-900 dark:text-white">{spinners.length}</span>
+								</div>
+								<div class="flex justify-between text-sm">
+									<span class="text-gray-600 dark:text-gray-300">Spun Spinners:</span>
+									<span class="font-medium text-gray-900 dark:text-white">{spinnerValues.filter(v => v?.value).length}</span>
+								</div>
+								<div class="flex justify-between text-sm">
+									<span class="text-gray-600 dark:text-gray-300">Unspun Spinners:</span>
+									<span class="font-medium text-gray-900 dark:text-white">{spinners.length - spinnerValues.filter(v => v?.value).length}</span>
+								</div>
+							</div>
+							<div class="mt-6 border-t border-gray-200 pt-4 dark:border-gray-600">
+								<h4 class="mb-3 font-medium text-gray-900 dark:text-white">Results Summary</h4>
+								<div class="max-h-48 space-y-1 overflow-y-auto">
+									{#each getSpinResults() as [value, count]}
+										<div class="flex items-center justify-between rounded-md bg-gray-50 px-3 py-1.5 text-sm dark:bg-gray-700">
+											<span class="text-gray-700 dark:text-gray-300">{value}</span>
+											<span class="ml-2 rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-600 dark:bg-purple-900/50 dark:text-purple-300">
+												{count} {count === 1 ? 'time' : 'times'}
+											</span>
+										</div>
+									{/each}
+								</div>
+							</div>
+						</div>
+					{/if}
 				</div>
 			{/if}
 		</aside>
