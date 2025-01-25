@@ -208,6 +208,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Jacob's Dad's Ultimate Spinner!</title>
+</svelte:head>
+
 <div
 	class="min-h-screen bg-gradient-to-br from-purple-50 to-purple-100 transition-colors dark:from-gray-900 dark:to-gray-800"
 >
@@ -410,7 +414,7 @@
 						<h3 class="mb-3 font-medium text-gray-900 dark:text-white">Test Examples</h3>
 						<button
 							on:click={addTestSpinners}
-							class="mb-2 w-full rounded-md bg-purple-100 px-3 py-2 text-sm font-medium text-purple-700 transition-colors hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-900/50"
+							class="mb-2 w-full rounded-md bg-purple-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:bg-purple-500 dark:hover:bg-purple-600"
 						>
 							Load Test Spinners
 						</button>
@@ -422,7 +426,7 @@
 						<h3 class="mb-3 font-medium text-gray-900 dark:text-white">Basic Examples</h3>
 						<button
 							on:click={addFruitSpinners}
-							class="mb-2 w-full rounded-md bg-purple-100 px-3 py-2 text-sm font-medium text-purple-700 transition-colors hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-900/50"
+							class="mb-2 w-full rounded-md bg-purple-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:bg-purple-500 dark:hover:bg-purple-600"
 						>
 							Load Fruit Spinners
 						</button>
@@ -435,7 +439,7 @@
 						<h3 class="mb-3 font-medium text-gray-900 dark:text-white">Number Spinners</h3>
 						<button
 							on:click={addRandomNumberSpinners}
-							class="mb-2 w-full rounded-md bg-purple-100 px-3 py-2 text-sm font-medium text-purple-700 transition-colors hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-900/50"
+							class="mb-2 w-full rounded-md bg-purple-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:bg-purple-500 dark:hover:bg-purple-600"
 						>
 							Generate Random Number Spinners
 						</button>
@@ -448,7 +452,7 @@
 						<h3 class="mb-3 font-medium text-gray-900 dark:text-white">Large Item Sets</h3>
 						<button
 							on:click={addLargeItemSpinners}
-							class="mb-2 w-full rounded-md bg-purple-100 px-3 py-2 text-sm font-medium text-purple-700 transition-colors hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-900/50"
+							class="mb-2 w-full rounded-md bg-purple-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:bg-purple-500 dark:hover:bg-purple-600"
 						>
 							Load Large Item Spinners
 						</button>
@@ -461,7 +465,7 @@
 						<h3 class="mb-3 font-medium text-gray-900 dark:text-white">Mixed Examples</h3>
 						<button
 							on:click={addMixedExamples}
-							class="mb-2 w-full rounded-md bg-purple-100 px-3 py-2 text-sm font-medium text-purple-700 transition-colors hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-900/50"
+							class="mb-2 w-full rounded-md bg-purple-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:bg-purple-500 dark:hover:bg-purple-600"
 						>
 							Load Mixed Examples
 						</button>
