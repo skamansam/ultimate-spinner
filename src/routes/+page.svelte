@@ -12,6 +12,14 @@
 	let showStats = $state(false);
 	let activeTab = $state('values');
 
+	import { onMount } from 'svelte';
+
+	onMount(() => {
+		if (spinners.length === 0) {
+			activeTab = 'examples';
+		}
+	});
+
 	/**
 	 * @type {HTMLDialogElement}
 	 */
@@ -122,6 +130,82 @@
 			.filter(v => v?.value && !isNaN(Number(v.value)))
 			.map(v => Number(v.value));
 	}
+
+	function addFruitSpinners() {
+		spinners = [
+			{ title: 'Fruits', items: ['Apple', 'Banana', 'Orange', 'Grape', 'Mango'] },
+			{ title: 'Colors', items: ['Red', 'Blue', 'Green', 'Yellow', 'Purple'] },
+			{ title: 'Animals', items: ['Lion', 'Tiger', 'Bear', 'Eagle', 'Wolf'] }
+		];
+		spinnerValues = new Array(spinners.length).fill(null);
+	}
+
+	function addRandomNumberSpinners() {
+		const numSpinners = Math.floor(Math.random() * 5) + 3; // 3-7 spinners
+		const spinnerList = [];
+		
+		for (let i = 0; i < numSpinners; i++) {
+			const numItems = Math.floor(Math.random() * 8) + 4; // 4-11 items
+			const items = Array.from({ length: numItems }, (_, idx) => 
+				(Math.floor(Math.random() * 100) + 1).toString()
+			);
+			spinnerList.push({
+				title: `Number Spinner ${i + 1}`,
+				items: [...new Set(items)] // Remove any duplicates
+			});
+		}
+		
+		spinners = spinnerList;
+		spinnerValues = new Array(spinners.length).fill(null);
+	}
+
+	function addLargeItemSpinners() {
+		const months = [
+			'January', 'February', 'March', 'April', 'May', 'June', 
+			'July', 'August', 'September', 'October', 'November', 'December'
+		];
+		
+		const cards = Array.from({ length: 52 }, (_, i) => {
+			const suits = ['♠', '♥', '♦', '♣'];
+			const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+			const suit = suits[Math.floor(i / 13)];
+			const value = values[i % 13];
+			return `${value}${suit}`;
+		});
+
+		const letters = Array.from({ length: 26 }, (_, i) => 
+			String.fromCharCode(65 + i)
+		);
+
+		spinners = [
+			{ title: 'Calendar Spinner', items: months },
+			{ title: 'Card Deck', items: cards },
+			{ title: 'Alphabet', items: letters }
+		];
+		spinnerValues = new Array(spinners.length).fill(null);
+	}
+
+	function addMixedExamples() {
+		spinners = [
+			{ 
+				title: 'Decision Maker',
+				items: ['Yes', 'No', 'Maybe', 'Ask Again', 'Definitely', 'No Way']
+			},
+			{
+				title: 'Lunch Picker',
+				items: ['Pizza', 'Sushi', 'Salad', 'Burger', 'Tacos', 'Sandwich', 'Pasta']
+			},
+			{
+				title: 'Break Timer',
+				items: ['5 mins', '10 mins', '15 mins', '20 mins', '30 mins']
+			},
+			{
+				title: 'Team Roles',
+				items: ['Leader', 'Timekeeper', 'Note Taker', 'Presenter']
+			}
+		];
+		spinnerValues = new Array(spinners.length).fill(null);
+	}
 </script>
 
 <div
@@ -130,9 +214,8 @@
 	<div class="absolute left-4 top-4">
 		<ThemeToggle />
 	</div>
-	<div class="flex">
-		<!-- Main Content -->
-		<main class="flex-1 p-8">
+	<div class="flex min-h-screen bg-white dark:bg-gray-900">
+		<main class="flex-1 p-6">
 			<div class="mx-auto space-y-8">
 				<header class="space-y-4 text-center">
 					<h1 class="text-4xl font-bold tracking-tight text-purple-600 dark:text-purple-400">
@@ -187,7 +270,7 @@
 		</main>
 
 		<!-- Results Sidebar -->
-		<aside class="w-80 border-l border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+		<aside class="w-96 flex-none border-l border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
 			<div class="mb-6 flex items-center justify-between">
 				<h2 class="text-lg font-semibold text-gray-900 dark:text-white">Current Values</h2>
 				<div class="flex gap-2">
@@ -202,111 +285,190 @@
 				</div>
 			</div>
 
-			{#if spinners.length === 0}
-				<p class="text-gray-500 dark:text-gray-400">No spinners added yet. Add a spinner to see its value here!</p>
-			{:else}
-				<div class="space-y-3">
-					<!-- Tab Bar -->
-					<div class="border-b border-gray-200 dark:border-gray-700">
-						<nav class="-mb-px flex space-x-4" aria-label="Tabs">
-							<button
-								on:click={() => activeTab = 'values'}
-								class="whitespace-nowrap px-1 py-2 text-sm font-medium {activeTab === 'values' ? 'border-b-2 border-purple-500 text-purple-600 dark:border-purple-400 dark:text-purple-400' : 'text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'}"
-							>
-								Values
-							</button>
-							<button
-								on:click={() => activeTab = 'results'}
-								class="whitespace-nowrap px-1 py-2 text-sm font-medium {activeTab === 'results' ? 'border-b-2 border-purple-500 text-purple-600 dark:border-purple-400 dark:text-purple-400' : 'text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'}"
-							>
-								Results
-							</button>
-							<button
-								on:click={() => activeTab = 'stats'}
-								class="whitespace-nowrap px-1 py-2 text-sm font-medium {activeTab === 'stats' ? 'border-b-2 border-purple-500 text-purple-600 dark:border-purple-400 dark:text-purple-400' : 'text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'}"
-							>
-								Stats
-							</button>
-						</nav>
-					</div>
+			<!-- Tab Bar -->
+			<div class="border-b border-gray-200 dark:border-gray-700 mb-4">
+				<nav class="-mb-px flex space-x-4" aria-label="Tabs">
+					<button
+						on:click={() => activeTab = 'values'}
+						class="whitespace-nowrap px-1 py-2 text-sm font-medium {activeTab === 'values' ? 'border-b-2 border-purple-500 text-purple-600 dark:border-purple-400 dark:text-purple-400' : 'text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'}"
+					>
+						Values
+					</button>
+					<button
+						on:click={() => activeTab = 'results'}
+						class="whitespace-nowrap px-1 py-2 text-sm font-medium {activeTab === 'results' ? 'border-b-2 border-purple-500 text-purple-600 dark:border-purple-400 dark:text-purple-400' : 'text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'}"
+					>
+						Results
+					</button>
+					<button
+						on:click={() => activeTab = 'stats'}
+						class="whitespace-nowrap px-1 py-2 text-sm font-medium {activeTab === 'stats' ? 'border-b-2 border-purple-500 text-purple-600 dark:border-purple-400 dark:text-purple-400' : 'text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'}"
+					>
+						Stats
+					</button>
+					<button
+						on:click={() => activeTab = 'examples'}
+						class="whitespace-nowrap px-1 py-2 text-sm font-medium {activeTab === 'examples' ? 'border-b-2 border-purple-500 text-purple-600 dark:border-purple-400 dark:text-purple-400' : 'text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'}"
+					>
+						Examples
+					</button>
+				</nav>
+			</div>
 
-					<!-- Values Tab -->
-					{#if activeTab === 'values'}
-						<div class="space-y-3">
-							{#each spinners as spinner, i}
-								<div class="rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
-									<h3 class="font-medium text-gray-900 dark:text-white">{spinner.title || "New Spinner!"}</h3>
-									<p class="text-sm text-gray-600 dark:text-gray-300">
-										{spinnerValues[i]?.value || 'Not spun yet'}
-									</p>
-								</div>
-							{/each}
-						</div>
+			{#if activeTab === 'values'}
+				{#if spinners.length === 0}
+					{#if activeTab !== 'examples'}
+						<p class="text-gray-500 dark:text-gray-400">No spinners added yet. Add a spinner to see its value here!</p>
 					{/if}
-
-					<!-- Results Tab -->
-					{#if activeTab === 'results'}
-						<div class="space-y-3">
-							<div class="max-h-[calc(100vh-300px)] space-y-1 overflow-y-auto">
-								{#each getSpinResults() as [value, count]}
-									<div class="flex items-center justify-between rounded-md bg-gray-50 px-3 py-1.5 text-sm dark:bg-gray-700">
-										<span class="text-gray-700 dark:text-gray-300">{value}</span>
-										<span class="ml-2 rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-600 dark:bg-purple-900/50 dark:text-purple-300">
-											{count} {count === 1 ? 'time' : 'times'}
-										</span>
-									</div>
-								{:else}
-									<p class="text-sm text-gray-500 dark:text-gray-400">No results yet</p>
-								{/each}
+				{:else}
+					<div class="space-y-3">
+						{#each spinners as spinner, i}
+							<div class="rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
+								<h3 class="font-medium text-gray-900 dark:text-white">{spinner.title || "New Spinner!"}</h3>
+								<p class="text-sm text-gray-600 dark:text-gray-300">
+									{spinnerValues[i]?.value || 'Not spun yet'}
+								</p>
 							</div>
-						</div>
-					{/if}
+						{/each}
+					</div>
+				{/if}
+			{/if}
 
-					<!-- Stats Tab -->
-					{#if activeTab === 'stats'}
-						<div class="space-y-4">
-							<!-- Numeric Stats -->
-							{#if getNumericValues().length > 0}
-								{@const values = getNumericValues()}
-								<div class="space-y-2">
-									<div class="flex justify-between text-sm">
-										<span class="text-gray-600 dark:text-gray-300">Total:</span>
-										<span class="font-medium text-gray-900 dark:text-white">{values.reduce((a, b) => a + b, 0)}</span>
-									</div>
-									<div class="flex justify-between text-sm">
-										<span class="text-gray-600 dark:text-gray-300">Average:</span>
-										<span class="font-medium text-gray-900 dark:text-white">{(values.reduce((a, b) => a + b, 0) / values.length).toFixed(2)}</span>
-									</div>
-									<div class="flex justify-between text-sm">
-										<span class="text-gray-600 dark:text-gray-300">Min:</span>
-										<span class="font-medium text-gray-900 dark:text-white">{Math.min(...values)}</span>
-									</div>
-									<div class="flex justify-between text-sm">
-										<span class="text-gray-600 dark:text-gray-300">Max:</span>
-										<span class="font-medium text-gray-900 dark:text-white">{Math.max(...values)}</span>
-									</div>
+			{#if activeTab === 'results'}
+				{#if spinners.length === 0}
+					<p class="text-gray-500 dark:text-gray-400">No spinners added yet. Add a spinner to see results here!</p>
+				{:else}
+					<div class="space-y-3">
+						<div class="max-h-[calc(100vh-300px)] space-y-1 overflow-y-auto">
+							{#each getSpinResults() as [value, count]}
+								<div class="flex items-center justify-between rounded-md bg-gray-50 px-3 py-1.5 text-sm dark:bg-gray-700">
+									<span class="text-gray-700 dark:text-gray-300">{value}</span>
+									<span class="ml-2 rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-600 dark:bg-purple-900/50 dark:text-purple-300">
+										{count} {count === 1 ? 'time' : 'times'}
+									</span>
 								</div>
 							{:else}
-								<p class="text-sm text-gray-500 dark:text-gray-400">No numeric values to calculate stats</p>
-							{/if}
+								<p class="text-sm text-gray-500 dark:text-gray-400">No results yet</p>
+							{/each}
+						</div>
+					</div>
+				{/if}
+			{/if}
 
-							<!-- General Stats -->
+			{#if activeTab === 'stats'}
+				{#if spinners.length === 0}
+					<p class="text-gray-500 dark:text-gray-400">No spinners added yet. Add a spinner to see statistics here!</p>
+				{:else}
+					<div class="space-y-4">
+						<!-- Numeric Stats -->
+						{#if getNumericValues().length > 0}
+							{@const values = getNumericValues()}
 							<div class="space-y-2">
 								<div class="flex justify-between text-sm">
-									<span class="text-gray-600 dark:text-gray-300">Total Spinners:</span>
-									<span class="font-medium text-gray-900 dark:text-white">{spinners.length}</span>
+									<span class="text-gray-600 dark:text-gray-300">Total:</span>
+									<span class="font-medium text-gray-900 dark:text-white">{values.reduce((a, b) => a + b, 0)}</span>
 								</div>
 								<div class="flex justify-between text-sm">
-									<span class="text-gray-600 dark:text-gray-300">Spun Spinners:</span>
-									<span class="font-medium text-gray-900 dark:text-white">{spinnerValues.filter(v => v?.value).length}</span>
+									<span class="text-gray-600 dark:text-gray-300">Average:</span>
+									<span class="font-medium text-gray-900 dark:text-white">{(values.reduce((a, b) => a + b, 0) / values.length).toFixed(2)}</span>
 								</div>
 								<div class="flex justify-between text-sm">
-									<span class="text-gray-600 dark:text-gray-300">Unspun Spinners:</span>
-									<span class="font-medium text-gray-900 dark:text-white">{spinners.length - spinnerValues.filter(v => v?.value).length}</span>
+									<span class="text-gray-600 dark:text-gray-300">Min:</span>
+									<span class="font-medium text-gray-900 dark:text-white">{Math.min(...values)}</span>
+								</div>
+								<div class="flex justify-between text-sm">
+									<span class="text-gray-600 dark:text-gray-300">Max:</span>
+									<span class="font-medium text-gray-900 dark:text-white">{Math.max(...values)}</span>
 								</div>
 							</div>
+						{:else}
+							<p class="text-sm text-gray-500 dark:text-gray-400">No numeric values to calculate stats</p>
+						{/if}
+
+						<!-- General Stats -->
+						<div class="space-y-2">
+							<div class="flex justify-between text-sm">
+								<span class="text-gray-600 dark:text-gray-300">Total Spinners:</span>
+								<span class="font-medium text-gray-900 dark:text-white">{spinners.length}</span>
+							</div>
+							<div class="flex justify-between text-sm">
+								<span class="text-gray-600 dark:text-gray-300">Spun Spinners:</span>
+								<span class="font-medium text-gray-900 dark:text-white">{spinnerValues.filter(v => v?.value).length}</span>
+							</div>
+							<div class="flex justify-between text-sm">
+								<span class="text-gray-600 dark:text-gray-300">Unspun Spinners:</span>
+								<span class="font-medium text-gray-900 dark:text-white">{spinners.length - spinnerValues.filter(v => v?.value).length}</span>
+							</div>
 						</div>
-					{/if}
+					</div>
+				{/if}
+			{/if}
+
+			{#if activeTab === 'examples'}
+				<div class="space-y-4">
+					<div class="rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
+						<h3 class="mb-3 font-medium text-gray-900 dark:text-white">Test Examples</h3>
+						<button
+							on:click={addTestSpinners}
+							class="mb-2 w-full rounded-md bg-purple-100 px-3 py-2 text-sm font-medium text-purple-700 transition-colors hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-900/50"
+						>
+							Load Test Spinners
+						</button>
+						<p class="text-sm text-gray-600 dark:text-gray-300">
+							Adds a bunch of spinners used for testing
+						</p>
+					</div>
+					<div class="rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
+						<h3 class="mb-3 font-medium text-gray-900 dark:text-white">Basic Examples</h3>
+						<button
+							on:click={addFruitSpinners}
+							class="mb-2 w-full rounded-md bg-purple-100 px-3 py-2 text-sm font-medium text-purple-700 transition-colors hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-900/50"
+						>
+							Load Fruit Spinners
+						</button>
+						<p class="text-sm text-gray-600 dark:text-gray-300">
+							Adds three spinners with fruits, colors, and animals
+						</p>
+					</div>
+
+					<div class="rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
+						<h3 class="mb-3 font-medium text-gray-900 dark:text-white">Number Spinners</h3>
+						<button
+							on:click={addRandomNumberSpinners}
+							class="mb-2 w-full rounded-md bg-purple-100 px-3 py-2 text-sm font-medium text-purple-700 transition-colors hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-900/50"
+						>
+							Generate Random Number Spinners
+						</button>
+						<p class="text-sm text-gray-600 dark:text-gray-300">
+							Creates 3-7 spinners with random numbers from 1-100
+						</p>
+					</div>
+
+					<div class="rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
+						<h3 class="mb-3 font-medium text-gray-900 dark:text-white">Large Item Sets</h3>
+						<button
+							on:click={addLargeItemSpinners}
+							class="mb-2 w-full rounded-md bg-purple-100 px-3 py-2 text-sm font-medium text-purple-700 transition-colors hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-900/50"
+						>
+							Load Large Item Spinners
+						</button>
+						<p class="text-sm text-gray-600 dark:text-gray-300">
+							Adds spinners with months, playing cards, and alphabet
+						</p>
+					</div>
+
+					<div class="rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
+						<h3 class="mb-3 font-medium text-gray-900 dark:text-white">Mixed Examples</h3>
+						<button
+							on:click={addMixedExamples}
+							class="mb-2 w-full rounded-md bg-purple-100 px-3 py-2 text-sm font-medium text-purple-700 transition-colors hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-900/50"
+						>
+							Load Mixed Examples
+						</button>
+						<p class="text-sm text-gray-600 dark:text-gray-300">
+							Adds practical spinners for decision making, lunch picking, and more
+						</p>
+					</div>
 				</div>
 			{/if}
 		</aside>
