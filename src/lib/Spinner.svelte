@@ -6,7 +6,7 @@
 	/**
 	 * @type {HTMLUListElement}
 	 */
-	let spinner;
+	let spinnerElement;
 
 	/**
 	 * @type {Animation}
@@ -18,6 +18,7 @@
 	let previousEndDegree = 0;
 
 	let currentValue = $state('');
+	let currentRotation = $state(0);
 	const dispatch = createEventDispatcher();
 
 	function dispatchValue() {
@@ -29,39 +30,42 @@
 			animation.cancel(); // Reset the animation if it already exists
 		}
 
-		const randomAdditionalDegrees = Math.random() * 360 + 1800;
-		const newEndDegree = previousEndDegree + randomAdditionalDegrees;
+		const segment = 360 / items.length;
+		const offset = 180;
 
-		animation = spinner.animate(
+		// First, pick a random value
+		const targetIndex = Math.floor(Math.random() * items.length);
+		const targetValue = items[targetIndex];
+
+		// Calculate the angle needed to land on this value
+		// We subtract from 360 because we're rotating clockwise
+		const baseAngle = 360 - ((targetIndex * segment) - offset);
+		
+		// Add random number of full rotations (3-6 spins)
+		const fullRotations = (Math.floor(Math.random() * 4) + 3) * 360;
+		const finalAngle = baseAngle + fullRotations;
+		
+		// Calculate total rotation from current position
+		const totalRotation = currentRotation + finalAngle;
+		currentRotation = totalRotation;
+
+		// Create the animation
+		animation = spinnerElement.animate(
 			[
-				{ transform: `rotate(${previousEndDegree}deg)` },
-				{ transform: `rotate(${newEndDegree}deg)` }
+				{ transform: `rotate(${currentRotation - finalAngle}deg)` },
+				{ transform: `rotate(${totalRotation}deg)` }
 			],
 			{
 				duration: spinDuration,
-				direction: 'normal',
-				easing: 'cubic-bezier(0.440, -0.205, 0.000, 1.130)',
-				fill: 'forwards',
-				iterations: 1
+				easing: 'cubic-bezier(0.2, 0, 0.2, 1)', // Custom easing for more realistic spin
+				// easing: 'cubic-bezier(0.440, -0.205, 0.000, 1.130)', // Custom easing for more realistic spin
+				fill: 'forwards'
 			}
 		);
 
-		previousEndDegree = newEndDegree;
-
-		const normalizeAngle = (finalAngle) => {
-			return (360 - finalAngle + 90) % 360;
-		};
-
-		const segment = 360 / items.length;
-		const offset = 15;
-
 		animation.onfinish = () => {
-			const finalAngle = newEndDegree % 360;
-			const normalizedAngle = normalizeAngle(finalAngle);
-			const winner = Math.floor(((normalizedAngle + offset) % 360) / segment);
-			const newValue = items[winner + 1];
-			if (currentValue !== newValue) {
-				currentValue = newValue;
+			if (currentValue !== targetValue) {
+				currentValue = targetValue;
 				dispatchValue();
 			}
 			dispatch('result', { title: title || "New Spinner!", selectedItem: currentValue });
@@ -99,7 +103,7 @@
 		tabindex="0"
 		role="button"
 		aria-label="Spin the wheel"
-		bind:this={spinner}
+		bind:this={spinnerElement}
 	>
 		{#each items as item, idx}
 			<li class="item" style="--idx: {idx};">{item}</li>
