@@ -1,7 +1,11 @@
 <script>
 	import { createEventDispatcher } from 'svelte';
-	
-	let { items = ['item One', 'item Two', 'item Three', 'item Four'], spinDuration = 3000, title = 'New Spinner!' } = $props();
+
+	let {
+		items = ['item One', 'item Two', 'item Three', 'item Four'],
+		spinDuration = 3000,
+		title = 'New Spinner!'
+	} = $props();
 
 	/**
 	 * @type {HTMLUListElement}
@@ -31,12 +35,12 @@
 
 	function getResultsAtTop() {
 		if (!spinnerElement) return null;
-		
+
 		const rect = headerElement.getBoundingClientRect();
 		const centerX = rect.left + rect.width / 2;
 		const topY = rect.top + rect.height + 30; // 30 pixels below the header
 		const element = document.elementFromPoint(centerX, topY);
-		if(element?.parentElement !== spinnerElement) return null;
+		if (element?.parentElement !== spinnerElement) return null;
 		return element?.textContent?.trim() || null;
 	}
 
@@ -66,31 +70,49 @@
 
 		animation.onfinish = () => {
 			currentValue = getResultsAtTop();
-			dispatch('valueChange', { title: title || "New Spinner!", value: currentValue });
+			dispatch('valueChange', { title: title || 'New Spinner!', value: currentValue });
 		};
 	}
 </script>
 
 <div class="spinner">
-	<div bind:this={headerElement} class="flex items-center justify-between px-4 py-2 text-gray-800 dark:text-gray-200">
-		<button 
-			class="p-1 hover:text-red-500 dark:hover:text-red-400 transition-colors" 
+	<div
+		bind:this={headerElement}
+		class="flex items-center justify-between px-4 py-2 text-gray-800 dark:text-gray-200"
+	>
+		<button
+			class="p-1 transition-colors hover:text-red-500 dark:hover:text-red-400"
 			aria-label="Delete spinner"
 			on:click={() => dispatch('delete')}
 		>
-			<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+			<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+				/>
 			</svg>
 		</button>
-		<span>{title || "New Spinner!"}</span>
-		<button 
-			class="p-1 hover:text-purple-500 dark:hover:text-purple-400 transition-colors" 
+		<span>{title || 'New Spinner!'}</span>
+		<button
+			class="p-1 transition-colors hover:text-purple-500 dark:hover:text-purple-400"
 			aria-label="Configure spinner"
 			on:click={() => dispatch('configure')}
 		>
-			<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+			<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+				/>
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+				/>
 			</svg>
 		</button>
 	</div>
@@ -102,6 +124,7 @@
 		role="button"
 		aria-label="Spin the wheel"
 		bind:this={spinnerElement}
+		data-itemCount={items.length}
 	>
 		{#each items as item, idx}
 			<li class="item" style="--idx: {idx};">{item}</li>
@@ -154,6 +177,27 @@
 				rotate: calc(360deg / var(--item-count) * calc(var(--idx) - 1));
 				transform-origin: center right;
 				width: 50cqi;
+			}
+			&[data-itemCount='1'] {
+				li {
+					aspect-ratio: 1/1;
+					display: block;
+					rotate: 0;
+					clip-path: none;
+					width: 100cqi;
+				}
+			}
+			&[data-itemCount='2'] {
+				li {
+					height: 100cqi;
+					clip-path: none;
+				}
+			}
+			&[data-itemCount='3'] {
+				li {
+					aspect-ratio: 1 / 2;
+					clip-path: polygon(-35% -100%, 100% 50%, 0% 145%);
+				}
 			}
 		}
 	}
