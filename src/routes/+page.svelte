@@ -2,35 +2,53 @@
 	import Spinner from '$lib/Spinner.svelte';
 	import ThemeToggle from '$lib/ThemeToggle.svelte';
 
+	/**
+	 * @typedef {Object} SpinnerValue
+	 * @property {string} title - The title of the spinner
+	 * @property {string|null} value - The current value selected by the spinner
+	 */
+
+	/**
+	 * @typedef {Object} SpinnerConfig
+	 * @property {string} title - The title of the spinner
+	 * @property {string[]} items - The list of items in the spinner
+	 */
+
 	const defaultItems = 'item One\nitem Two\nitem Three\nitem Four';
 
+	/** Used to temporarily store the title and items when editing a spinner
+	 * @type {string}
+	 */
 	let title = $state('');
+	/**
+	 * @type {string}
+	 */
 	let items = $state(defaultItems);
+
+	/**
+	 * @type {SpinnerConfig[]}
+	 */
+
+	/** @type {SpinnerConfig[]} */
 	let spinners = $state([]);
 	let editingSpinnerIndex = $state(-1);
+	/** @type {SpinnerValue[]} */
 	let spinnerValues = $state([]);
 	let showStats = $state(false);
 	let activeTab = $state('values');
 
-	import { onMount } from 'svelte';
-
-	onMount(() => {
-		if (spinners.length === 0) {
-			activeTab = 'examples';
-		}
-	});
-
-	/**
-	 * @type {HTMLDialogElement}
-	 */
+	/** @type {HTMLDialogElement} */
 	let dialog;
 
-	/**
-	 * @type {import('$lib/Spinner.svelte').default[]}
-	 */
+	/** @type {import('$lib/Spinner.svelte').default[]} */
 	let spinnerComponents = [];
 
-	function addSpinner() {
+	/**
+	 * Adds a new spinner to the list
+	 * @param {SubmitEvent} evt
+	 */
+	function addSpinner(evt) {
+		evt.preventDefault();
 		if (editingSpinnerIndex >= 0) {
 			spinners[editingSpinnerIndex] = { 
 				title, 
@@ -48,11 +66,19 @@
 		dialog?.close();
 	}
 
+	/**
+	 * Deletes a spinner at the specified index
+	 * @param {number} index - Index of the spinner to delete
+	 */
 	function deleteSpinner(index) {
 		spinners = spinners.filter((_, i) => i !== index);
 		spinnerValues = spinnerValues.filter((_, i) => i !== index);
 	}
 
+	/**
+	 * Opens the modal to configure an existing spinner
+	 * @param {number} index - Index of the spinner to configure
+	 */
 	function configureSpinner(index) {
 		const spinner = spinners[index];
 		title = spinner.title;
@@ -61,16 +87,26 @@
 		dialog?.showModal();
 	}
 
+	/**
+	 * Updates the spinner value at the specified index
+	 * @param {number} index - Index of the spinner to update
+	 * @param {{ title: string, value: string }} event - Event containing the new value
+	 */
 	function updateSpinnerValue(index, event) {
-		const { title, value } = event.detail;
+		const { title, value } = event;
 		spinnerValues[index] = { title, value };
-		// spinnerValues = [...spinnerValues];
 	}
 
+	/**
+	 * Opens the modal for adding/editing a spinner
+	 */
 	function openModal() {
 		dialog?.showModal();
 	}
 
+	/**
+	 * Closes the modal and resets its state
+	 */
 	function closeModal() {
 		title = '';
 		items = defaultItems;
@@ -78,6 +114,44 @@
 		dialog?.close();
 	}
 
+	/**
+	 * Spins all spinners simultaneously
+	 */
+	function spinAll() {
+		spinnerComponents.forEach(spinner => spinner?.spin());
+	}
+
+	/**
+	 * Toggles the visibility of statistics
+	 */
+	function toggleStats() {
+		showStats = !showStats;
+	}
+
+	/**
+	 * Gets the summary of all spin results
+	 * @returns {[string, number][]} Array of [value, count] pairs
+	 */
+	function getSpinResults() {
+		return Object.entries(spinnerValues.reduce((acc, val) => {
+			if (val?.value) acc[val.value] = (acc[val.value] || 0) + 1;
+			return acc;
+		}, {})).sort((a, b) => b[1] - a[1]);
+	}
+
+	/**
+	 * Gets the numeric values of all spin results
+	 * @returns {number[]} Array of numeric values
+	 */
+	function getNumericValues() {
+		return spinnerValues
+			.filter(v => v?.value && !isNaN(Number(v.value)))
+			.map(v => Number(v.value));
+	}
+
+	/**
+	 * Adds test spinners to the list
+	 */
 	function addTestSpinners() {
 		const testItemTexts = [
 				'item One',
@@ -99,38 +173,9 @@
 		})).flat().concat([{ title: "Test 1000!", items: (new Array(1000)).fill(0).map((_, i) => `item ${i + 1}`) }])];
 	}
 
-	function spinAll() {
-		spinnerComponents.forEach(spinner => spinner?.spin());
-	}
-
-	function toggleStats() {
-		showStats = !showStats;
-	}
-
-	$effect(() => {
-		// Calculate stats whenever spinnerValues changes
-		if (showStats && spinnerValues.length > 0) {
-			const numericValues = getNumericValues();
-			if (numericValues.length > 0) {
-				const total = numericValues.reduce((a, b) => a + b, 0);
-				console.log('Total of numeric values:', total);
-			}
-		}
-	});
-
-	function getSpinResults() {
-		return Object.entries(spinnerValues.reduce((acc, val) => {
-			if (val?.value) acc[val.value] = (acc[val.value] || 0) + 1;
-			return acc;
-		}, {})).sort((a, b) => b[1] - a[1]);
-	}
-
-	function getNumericValues() {
-		return spinnerValues
-			.filter(v => v?.value && !isNaN(Number(v.value)))
-			.map(v => Number(v.value));
-	}
-
+	/**
+	 * Adds fruit spinners to the list
+	 */
 	function addFruitSpinners() {
 		spinners = [
 			{ title: 'Fruits', items: ['Apple', 'Banana', 'Orange', 'Grape', 'Mango'] },
@@ -140,6 +185,9 @@
 		spinnerValues = new Array(spinners.length).fill(null);
 	}
 
+	/**
+	 * Adds random number spinners to the list
+	 */
 	function addRandomNumberSpinners() {
 		const numSpinners = Math.floor(Math.random() * 5) + 3; // 3-7 spinners
 		const spinnerList = [];
@@ -159,6 +207,9 @@
 		spinnerValues = new Array(spinners.length).fill(null);
 	}
 
+	/**
+	 * Adds large item spinners to the list
+	 */
 	function addLargeItemSpinners() {
 		const months = [
 			'January', 'February', 'March', 'April', 'May', 'June', 
@@ -185,6 +236,9 @@
 		spinnerValues = new Array(spinners.length).fill(null);
 	}
 
+	/**
+	 * Adds mixed examples to the list
+	 */
 	function addMixedExamples() {
 		spinners = [
 			{ 
@@ -206,6 +260,25 @@
 		];
 		spinnerValues = new Array(spinners.length).fill(null);
 	}
+
+	import { onMount } from 'svelte';
+
+	onMount(() => {
+		if (spinners.length === 0) {
+			activeTab = 'examples';
+		}
+	});
+
+	$effect(() => {
+		// Calculate stats whenever spinnerValues changes
+		if (showStats && spinnerValues.length > 0) {
+			const numericValues = getNumericValues();
+			if (numericValues.length > 0) {
+				const total = numericValues.reduce((a, b) => a + b, 0);
+				console.log('Total of numeric values:', total);
+			}
+		}
+	});
 </script>
 
 <svelte:head>
@@ -243,15 +316,15 @@
 								bind:this={spinnerComponents[i]}
 								title={spinner.title} 
 								items={[...spinner.items]} 
-								on:delete={() => deleteSpinner(i)}
-								on:configure={() => configureSpinner(i)}
-								on:valueChange={(evt) => updateSpinnerValue(i, evt)}
+								onDelete={() => deleteSpinner(i)}
+								onConfigure={() => configureSpinner(i)}
+								onValueChange={(evt) => updateSpinnerValue(i, evt)}
 							/>
 						</div>
 					{/each}
 					<!-- Add Spinner Button -->
 					<button
-						on:click={openModal}
+						onclick={openModal}
 						aria-label="Add new spinner"
 						class="group flex aspect-square w-full items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-white shadow-md transition-all duration-200 hover:border-purple-500 hover:shadow-lg dark:border-gray-600 dark:bg-gray-800 dark:hover:border-purple-400 sm:w-[400px]"
 					>
@@ -280,7 +353,7 @@
 				<div class="flex gap-2">
 					{#if spinners.length > 0}
 						<button
-							on:click={spinAll}
+							onclick={spinAll}
 							class="rounded-md bg-purple-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:bg-purple-500 dark:hover:bg-purple-600"
 						>
 							Spin All
@@ -293,25 +366,25 @@
 			<div class="border-b border-gray-200 dark:border-gray-700 mb-4">
 				<nav class="-mb-px flex space-x-4" aria-label="Tabs">
 					<button
-						on:click={() => activeTab = 'values'}
+						onclick={() => activeTab = 'values'}
 						class="whitespace-nowrap px-1 py-2 text-sm font-medium {activeTab === 'values' ? 'border-b-2 border-purple-500 text-purple-600 dark:border-purple-400 dark:text-purple-400' : 'text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'}"
 					>
 						Values
 					</button>
 					<button
-						on:click={() => activeTab = 'results'}
+						onclick={() => activeTab = 'results'}
 						class="whitespace-nowrap px-1 py-2 text-sm font-medium {activeTab === 'results' ? 'border-b-2 border-purple-500 text-purple-600 dark:border-purple-400 dark:text-purple-400' : 'text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'}"
 					>
 						Results
 					</button>
 					<button
-						on:click={() => activeTab = 'stats'}
+						onclick={() => activeTab = 'stats'}
 						class="whitespace-nowrap px-1 py-2 text-sm font-medium {activeTab === 'stats' ? 'border-b-2 border-purple-500 text-purple-600 dark:border-purple-400 dark:text-purple-400' : 'text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'}"
 					>
 						Stats
 					</button>
 					<button
-						on:click={() => activeTab = 'examples'}
+						onclick={() => activeTab = 'examples'}
 						class="whitespace-nowrap px-1 py-2 text-sm font-medium {activeTab === 'examples' ? 'border-b-2 border-purple-500 text-purple-600 dark:border-purple-400 dark:text-purple-400' : 'text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'}"
 					>
 						Examples
@@ -404,6 +477,19 @@
 								<span class="font-medium text-gray-900 dark:text-white">{spinners.length - spinnerValues.filter(v => v?.value).length}</span>
 							</div>
 						</div>
+						{#if showStats}
+							<div data-testid="stats-panel" class="mt-4">
+								<h3 class="text-lg font-semibold mb-2">Spin Results:</h3>
+								<ul class="space-y-1">
+									{#each getSpinResults() as [value, count]}
+										<li data-testid="spin-result" class="flex justify-between">
+											<span>{value}</span>
+											<span class="text-gray-600 dark:text-gray-400">{count} times</span>
+										</li>
+									{/each}
+								</ul>
+							</div>
+						{/if}
 					</div>
 				{/if}
 			{/if}
@@ -413,7 +499,7 @@
 					<div class="rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
 						<h3 class="mb-3 font-medium text-gray-900 dark:text-white">Test Examples</h3>
 						<button
-							on:click={addTestSpinners}
+							onclick={addTestSpinners}
 							class="mb-2 w-full rounded-md bg-purple-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:bg-purple-500 dark:hover:bg-purple-600"
 						>
 							Load Test Spinners
@@ -425,7 +511,7 @@
 					<div class="rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
 						<h3 class="mb-3 font-medium text-gray-900 dark:text-white">Basic Examples</h3>
 						<button
-							on:click={addFruitSpinners}
+							onclick={addFruitSpinners}
 							class="mb-2 w-full rounded-md bg-purple-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:bg-purple-500 dark:hover:bg-purple-600"
 						>
 							Load Fruit Spinners
@@ -438,7 +524,7 @@
 					<div class="rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
 						<h3 class="mb-3 font-medium text-gray-900 dark:text-white">Number Spinners</h3>
 						<button
-							on:click={addRandomNumberSpinners}
+							onclick={addRandomNumberSpinners}
 							class="mb-2 w-full rounded-md bg-purple-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:bg-purple-500 dark:hover:bg-purple-600"
 						>
 							Generate Random Number Spinners
@@ -451,7 +537,7 @@
 					<div class="rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
 						<h3 class="mb-3 font-medium text-gray-900 dark:text-white">Large Item Sets</h3>
 						<button
-							on:click={addLargeItemSpinners}
+							onclick={addLargeItemSpinners}
 							class="mb-2 w-full rounded-md bg-purple-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:bg-purple-500 dark:hover:bg-purple-600"
 						>
 							Load Large Item Spinners
@@ -464,7 +550,7 @@
 					<div class="rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
 						<h3 class="mb-3 font-medium text-gray-900 dark:text-white">Mixed Examples</h3>
 						<button
-							on:click={addMixedExamples}
+							onclick={addMixedExamples}
 							class="mb-2 w-full rounded-md bg-purple-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:bg-purple-500 dark:hover:bg-purple-600"
 						>
 							Load Mixed Examples
@@ -482,13 +568,13 @@
 <!-- Dialog Modal -->
 <dialog
 	bind:this={dialog}
-	on:close={closeModal}
+	onclose={closeModal}
 	class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl backdrop:bg-black backdrop:bg-opacity-50 dark:bg-gray-800"
 >
 	<div class="relative">
 		<!-- Close button -->
 		<button
-			on:click={closeModal}
+			onclick={closeModal}
 			aria-label="Close modal"
 			class="absolute right-0 top-1  text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
 		>
@@ -506,7 +592,7 @@
 				{editingSpinnerIndex >= 0 ? 'Edit' : 'Add'} Spinner
 			</h2>
 		</div>
-		<form class="space-y-6 " on:submit|preventDefault={addSpinner}>
+		<form class="space-y-6 " onsubmit={addSpinner}>
 			<div class="space-y-4">
 				<label class="block" for="title">
 					<span class="mb-1 block font-medium text-gray-700 dark:text-gray-300">Title (optional)</span>

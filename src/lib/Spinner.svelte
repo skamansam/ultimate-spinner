@@ -1,10 +1,12 @@
 <script>
-	import { createEventDispatcher } from 'svelte';
 
 	let {
 		items = ['item One', 'item Two', 'item Three', 'item Four'],
 		spinDuration = 3000,
-		title = 'New Spinner!'
+		title = 'New Spinner!',
+		onDelete = () => console.warn('No handler provided for onDelete event'),
+		onConfigure = () => console.warn('No handler provided for onConfigure event'),
+		onValueChange = (value) => console.warn('No handler provided for onValueChange event', value)
 	} = $props();
 
 	/**
@@ -30,8 +32,6 @@
 	 * @type {string|null}
 	 */
 	let currentValue = $state('');
-	let currentRotation = $state(0);
-	const dispatch = createEventDispatcher();
 
 	function getResultsAtTop() {
 		if (!spinnerElement) return null;
@@ -70,7 +70,7 @@
 
 		animation.onfinish = () => {
 			currentValue = getResultsAtTop();
-			dispatch('valueChange', { title: title || 'New Spinner!', value: currentValue });
+			onValueChange({ title: title || 'New Spinner!', value: currentValue });
 		};
 	}
 </script>
@@ -83,7 +83,7 @@
 		<button
 			class="p-1 transition-colors hover:text-red-500 dark:hover:text-red-400"
 			aria-label="Delete spinner"
-			on:click={() => dispatch('delete')}
+			onclick={onDelete}
 		>
 			<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 				<path
@@ -98,7 +98,7 @@
 		<button
 			class="p-1 transition-colors hover:text-purple-500 dark:hover:text-purple-400"
 			aria-label="Configure spinner"
-			on:click={() => dispatch('configure')}
+			onclick={onConfigure}
 		>
 			<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 				<path
@@ -117,13 +117,13 @@
 		</button>
 	</div>
 	<ul
+		bind:this={spinnerElement}
 		style="--item-count: {items.length}; --spin-duration: {spinDuration}ms;"
-		on:click={spin}
-		on:keydown={(e) => e.key === 'Enter' && spin()}
+		onclick={spin}
+		onkeydown={(e) => e.key === 'Enter' && spin()}
 		tabindex="0"
 		role="button"
 		aria-label="Spin the wheel"
-		bind:this={spinnerElement}
 		data-itemCount={items.length}
 	>
 		{#each items as item, idx}
