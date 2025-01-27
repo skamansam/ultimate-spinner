@@ -12,7 +12,7 @@ test.describe('Spinner Page', () => {
 
   test('should add a new spinner', async ({ page }) => {
     // Open add spinner modal
-    await page.getByRole('button', { name: 'Add Spinner' }).click();
+    await page.getByRole('button', { name: 'Add new spinner' }).click();
     
     // Fill in spinner details
     await page.getByLabel('Title').fill('Test Spinner');
