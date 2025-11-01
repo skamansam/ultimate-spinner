@@ -1,5 +1,7 @@
 # Ultimate Spinner
+
 [![PR Checks](https://github.com/skamansam/ultimate-spinner/actions/workflows/pr-checks.yml/badge.svg)](https://github.com/skamansam/ultimate-spinner/actions/workflows/pr-checks.yml)
+
 A customizable, animated spinner component for SvelteKit applications.
 
 ## Installation
