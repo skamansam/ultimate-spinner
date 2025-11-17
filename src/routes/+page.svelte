@@ -19,6 +19,7 @@
 	 * @property {string} id - Unique identifier for the snapshot
 	 * @property {string} timestamp - ISO timestamp when the snapshot was recorded
 	 * @property {{ title: string, value: string|null }[]} values - Spinner titles and values at that moment
+	 * @property {[string, number][]} results - Aggregated results list as shown in the Results tab at that time
 	 */
 
 	/**
@@ -173,6 +174,8 @@
 	 */
 	function spinAll() {
 		if (spinners.length > 0) {
+			// Capture the current aggregated results exactly as shown in the Results tab
+			const currentResults = getSpinResults();
 			const snapshotValues = spinners.map((spinner, index) => ({
 				title: spinner.title || 'New Spinner!',
 				value: spinnerValues[index]?.value ?? null
@@ -180,7 +183,8 @@
 			const snapshot = {
 				id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
 				timestamp: new Date().toISOString(),
-				values: snapshotValues
+				values: snapshotValues,
+				results: currentResults
 			};
 			spinHistory = [snapshot, ...spinHistory];
 		}
@@ -221,11 +225,15 @@
 	 * @returns {[string, number][]}
 	 */
 	function getResultsFromSnapshot(snapshot) {
+		// Prefer stored results if available (they were captured from getSpinResults at the time)
+		if (Array.isArray(snapshot.results) && snapshot.results.length > 0) {
+			return snapshot.results;
+		}
+		// Fallback for older snapshots that don't have a results field
 		const acc = {};
 		for (const entry of snapshot.values) {
-			if (entry?.value) {
-				acc[entry.value] = (acc[entry.value] || 0) + 1;
-			}
+			if (!entry?.value) continue;
+			acc[entry.value] = (acc[entry.value] || 0) + 1;
 		}
 		return Object.entries(acc).sort((a, b) => b[1] - a[1]);
 	}
@@ -505,7 +513,8 @@
 									.map((v) => ({
 										title: typeof v.title === 'string' ? v.title : '',
 										value: v.value ?? null
-									}))
+									})),
+								results: Array.isArray(s.results) ? s.results : []
 							}));
 					}
 				}
