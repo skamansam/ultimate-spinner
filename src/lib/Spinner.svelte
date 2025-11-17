@@ -70,7 +70,14 @@
 		previousEndDegree = newEndDegree;
 
 		animation.onfinish = () => {
-			currentValue = getResultsAtTop();
+			let value = getResultsAtTop();
+			// If the spinner isn't visible in the viewport, elementFromPoint may not
+			// return a usable item. In that case, fall back to a random item so the
+			// spin still produces a result.
+			if (!value && items.length > 0) {
+				value = items[Math.floor(Math.random() * items.length)] ?? null;
+			}
+			currentValue = value;
 			onValueChange({ title: title || 'New Spinner!', value: currentValue });
 		};
 	}
