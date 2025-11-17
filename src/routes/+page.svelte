@@ -1,6 +1,7 @@
 <script>
 	import Spinner from '$lib/Spinner.svelte';
 	import ThemeToggle from '$lib/ThemeToggle.svelte';
+	import ChangelogDialog from '$lib/ChangelogDialog.svelte';
 
 	/**
 	 * @typedef {Object} SpinnerValue
@@ -70,6 +71,8 @@
 	let exportDialog;
 	/** @type {HTMLDialogElement} */
 	let saveDialog;
+	/** @type {import('$lib/ChangelogDialog.svelte').default} */
+	let changelogDialog;
 
 	/** @type {import('$lib/Spinner.svelte').default[]} */
 	let spinnerComponents = [];
@@ -566,8 +569,28 @@
 <div
 	class="min-h-screen bg-gradient-to-br from-purple-50 to-purple-100 transition-colors dark:from-gray-900 dark:to-gray-800"
 >
-	<div class="absolute left-4 top-4">
+	<div class="absolute left-4 top-4 flex items-center gap-2">
 		<ThemeToggle />
+		<button
+			type="button"
+			onclick={() => changelogDialog?.open()}
+			class="p-2 inline-flex items-center gap-1 rounded-md border border-gray-300 bg-white font-medium text-gray-700 shadow-sm transition-colors hover:border-purple-400 hover:text-purple-600 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-purple-400 dark:hover:text-purple-300"
+		>
+			<svg
+				class="h-4 w-4 flex-shrink-0"
+				fill="none"
+				stroke="currentColor"
+				viewBox="0 0 24 24"
+			>
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="M9 5h9m-9 4h9m-9 4h6M5 5h.01M5 9h.01M5 13h.01M5 7v10a2 2 0 0 0 2 2h10"
+				/>
+			</svg>
+			<span>Changelog</span>
+		</button>
 	</div>
 	<div class="flex min-h-screen bg-white dark:bg-gray-900">
 		<main class="flex-1 p-6">
@@ -1106,6 +1129,8 @@
 		</div>
 	</div>
 </dialog>
+
+<ChangelogDialog bind:this={changelogDialog} />
 
 <dialog
 	bind:this={importDialog}
