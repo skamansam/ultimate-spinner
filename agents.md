@@ -235,7 +235,8 @@ When adding new custom-set shapes or shortcuts, update both import and export lo
 #### Changelog
 
 - A **Changelog** button next to the theme toggle opens a dialog showing a static summary derived from recent git history.
-- To update it, run `git log` and edit `agents.md` and the dialog content accordingly.
+- When you add new features or change existing ones, run `git log` and update both this section of
+  `agents.md` and the changelog dialog so users see an accurate summary of recent changes.
 
 ---
 
