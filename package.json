@@ -1,6 +1,6 @@
 {
 	"name": "ultimate-spinner",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"license": "MIT",
 	"author": "'Skaman Sam'uel C Tyler <skamansam@gmail.com>",
 	"description": "A Svelte component for creating a beautiful and customizable spinner.",
