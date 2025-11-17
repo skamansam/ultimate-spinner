@@ -2,7 +2,7 @@
 
 [![PR Checks](https://github.com/skamansam/ultimate-spinner/actions/workflows/pr-checks.yml/badge.svg)](https://github.com/skamansam/ultimate-spinner/actions/workflows/pr-checks.yml)
 
-A customizable, animated spinner component for SvelteKit applications.
+A customizable, animated spinner component for Svelte applications.
 
 ## Installation
 
@@ -17,14 +17,39 @@ pnpm add ultimate-spinner
 ```svelte
 <script>
   import { Spinner } from 'ultimate-spinner';
+
+  const items = ['Heads', 'Tails'];
+
+  function handleValueChange({ title, value }) {
+    console.log(`Spinner "${title}" landed on:`, value);
+  }
 </script>
 
-<Spinner 
-  items={['Item 1', 'Item 2', 'Item 3']}
+<Spinner
+  title="Coin Flip"
+  items={items}
   spinDuration={3000}
-  title="My Spinner"
+  onValueChange={handleValueChange}
 />
 ```
+
+### Props
+
+- `items: string[]` – labels in the wheel. You can pass any number of items (including 1–2); the component adjusts its layout accordingly.
+- `title: string` – optional title shown in the header above the wheel.
+- `spinDuration: number` – duration of the spin animation in milliseconds.
+- `onValueChange: ({ title: string; value: string | null }) => void` – called when the spin finishes with the item that landed at the top.
+- `onDelete: () => void` – optional callback for the delete button in the header.
+- `onConfigure: () => void` – optional callback for the configure button in the header.
+- `onDuplicate: () => void` – optional callback for the duplicate button in the header.
+
+### Behavior
+
+- Uses a CSS‑driven “wheel of fortune” layout with smooth spin animation.
+- Determines the winning value based on the segment that visibly lands at the top of the spinner.
+- Handles small item counts (1–2–3 items) with special layouts so the wheel still looks good.
+- Continues to produce a result even if the spinner is not currently visible in the viewport (e.g. off‑screen), by falling back to a random item.
+- Click the wheel or press `Enter` while focused to trigger a spin (keyboard accessible).
 
 ## License
 
@@ -40,4 +65,4 @@ While this project is open source and free to use, we kindly request that you:
 
 ## Author
 
-Created by [Sam](https://github.com/skamansam)
+Created by ["Skaman" Samuel C Tyler](https://github.com/skamansam)
