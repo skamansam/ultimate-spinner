@@ -42,6 +42,11 @@
         </h3>
         <ul class="space-y-1 text-gray-800 dark:text-gray-100">
           <li>
+            <span class="font-mono text-[11px] text-gray-500 dark:text-gray-400">dbd76de</span>
+            <span class="ml-2 font-semibold">2025-11-17</span>
+            <span class="ml-2">Fixed a bug where spins could fail to produce a result if the spinner was not visible on screen.</span>
+          </li>
+          <li>
             <span class="font-mono text-[11px] text-gray-500 dark:text-gray-400">d86afac</span>
             <span class="ml-2 font-semibold">2025-11-17</span>
             <span class="ml-2">Spin history now shows exactly the results as they were when you spun.</span>
