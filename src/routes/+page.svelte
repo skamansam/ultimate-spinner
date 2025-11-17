@@ -15,6 +15,13 @@
 	 */
 
 	/**
+	 * @typedef {Object} SpinSnapshot
+	 * @property {string} id - Unique identifier for the snapshot
+	 * @property {string} timestamp - ISO timestamp when the snapshot was recorded
+	 * @property {{ title: string, value: string|null }[]} values - Spinner titles and values at that moment
+	 */
+
+	/**
 	 * @typedef {Object} CustomSet
 	 * @property {string} name - Display name of the custom combination
 	 * @property {SpinnerConfig[]} spinners - Spinners included in the combination
@@ -50,6 +57,9 @@
 	let exportJson = $state('');
 	let customSelection = $state([]);
 	let isExportMode = $state(false);
+	/** @type {SpinSnapshot[]} */
+	let spinHistory = $state([]);
+	let expandedHistoryIndex = $state(null);
 
 	/** @type {HTMLDialogElement} */
 	let dialog;
@@ -162,6 +172,18 @@
 	 * Spins all spinners simultaneously
 	 */
 	function spinAll() {
+		if (spinners.length > 0) {
+			const snapshotValues = spinners.map((spinner, index) => ({
+				title: spinner.title || 'New Spinner!',
+				value: spinnerValues[index]?.value ?? null
+			}));
+			const snapshot = {
+				id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+				timestamp: new Date().toISOString(),
+				values: snapshotValues
+			};
+			spinHistory = [snapshot, ...spinHistory];
+		}
 		spinnerComponents.forEach(spinner => spinner?.spin());
 	}
 
@@ -191,6 +213,21 @@
 		return spinnerValues
 			.filter(v => v?.value && !isNaN(Number(v.value)))
 			.map(v => Number(v.value));
+	}
+
+	/**
+	 * Computes spin results for a given snapshot
+	 * @param {SpinSnapshot} snapshot
+	 * @returns {[string, number][]}
+	 */
+	function getResultsFromSnapshot(snapshot) {
+		const acc = {};
+		for (const entry of snapshot.values) {
+			if (entry?.value) {
+				acc[entry.value] = (acc[entry.value] || 0) + 1;
+			}
+		}
+		return Object.entries(acc).sort((a, b) => b[1] - a[1]);
 	}
 
 	/**
@@ -457,6 +494,20 @@
 									: []
 							}));
 					}
+					if (Array.isArray(parsed.spinHistory)) {
+						spinHistory = parsed.spinHistory
+							.filter((s) => s && typeof s === 'object' && Array.isArray(s.values))
+							.map((s) => ({
+								id: typeof s.id === 'string' ? s.id : String(Date.now()),
+								timestamp: typeof s.timestamp === 'string' ? s.timestamp : new Date().toISOString(),
+								values: s.values
+									.filter((v) => v && typeof v === 'object')
+									.map((v) => ({
+										title: typeof v.title === 'string' ? v.title : '',
+										value: v.value ?? null
+									}))
+							}));
+					}
 				}
 			}
 		} catch (e) {}
@@ -488,7 +539,8 @@
 			spinnerValues,
 			activeTab,
 			showStats,
-			customSets
+			customSets,
+			spinHistory
 		};
 		try {
 			if (typeof localStorage !== 'undefined') {
@@ -622,15 +674,60 @@
 						<p class="text-gray-500 dark:text-gray-400">No spinners added yet. Add a spinner to see its value here!</p>
 					{/if}
 				{:else}
-					<div class="space-y-3">
-						{#each spinners as spinner, i}
-							<div class="rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
-								<h3 class="font-medium text-gray-900 dark:text-white">{spinner.title || "New Spinner!"}</h3>
-								<p class="text-sm text-gray-600 dark:text-gray-300">
-									{spinnerValues[i]?.value || 'Not spun yet'}
-								</p>
-							</div>
-						{/each}
+					<div class="space-y-6">
+						<div class="space-y-3">
+							{#each spinners as spinner, i}
+								<div class="rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
+									<h3 class="font-medium text-gray-900 dark:text-white">{spinner.title || "New Spinner!"}</h3>
+									<p class="text-sm text-gray-600 dark:text-gray-300">
+										{spinnerValues[i]?.value || 'Not spun yet'}
+									</p>
+								</div>
+							{/each}
+						</div>
+
+						<div class="space-y-2">
+							<h3 class="text-sm font-semibold text-gray-800 dark:text-gray-100">Previous spins</h3>
+							{#if spinHistory.length === 0}
+								<p class="text-xs text-gray-500 dark:text-gray-400">No previous spins recorded yet. Use "Spin All" to record a snapshot.</p>
+							{:else}
+								<ul class="space-y-2 max-h-64 overflow-y-auto pr-1">
+									{#each spinHistory as snapshot, i}
+										<li class="rounded-md border border-gray-200 bg-white p-2 text-xs dark:border-gray-700 dark:bg-gray-800">
+											<button
+												type="button"
+												onclick={() => expandedHistoryIndex = expandedHistoryIndex === i ? null : i}
+												class="flex w-full items-center justify-between gap-2 text-left"
+											>
+												<span class="truncate text-gray-800 dark:text-gray-100">
+													{#if snapshot.values.filter(v => v.value).length > 0}
+														{snapshot.values
+															.filter(v => v.value)
+															.map(v => v.value)
+															.join(', ')}
+													{:else}
+														(No values)
+													{/if}
+												</span>
+												<span class="ml-2 flex-shrink-0 text-[10px] text-gray-500 dark:text-gray-400">
+													{new Date(snapshot.timestamp).toLocaleTimeString()}
+													</span>
+											</button>
+											{#if expandedHistoryIndex === i}
+												<ul class="mt-2 space-y-1">
+													{#each snapshot.values as entry}
+														<li class="flex justify-between text-[11px] text-gray-700 dark:text-gray-200">
+															<span class="mr-2 truncate font-medium">{entry.title}</span>
+															<span class="truncate">{entry.value ?? 'Not spun'}</span>
+														</li>
+													{/each}
+												</ul>
+											{/if}
+										</li>
+									{/each}
+								</ul>
+							{/if}
+						</div>
 					</div>
 				{/if}
 			{/if}
@@ -639,7 +736,7 @@
 				{#if spinners.length === 0}
 					<p class="text-gray-500 dark:text-gray-400">No spinners added yet. Add a spinner to see results here!</p>
 				{:else}
-					<div class="space-y-3">
+					<div class="space-y-6">
 						<div class="max-h-[calc(100vh-300px)] space-y-1 overflow-y-auto">
 							{#each getSpinResults() as [value, count]}
 								<div class="flex items-center justify-between rounded-md bg-gray-50 px-3 py-1.5 text-sm dark:bg-gray-700">
@@ -651,6 +748,28 @@
 							{:else}
 								<p class="text-sm text-gray-500 dark:text-gray-400">No results yet</p>
 							{/each}
+						</div>
+
+						<div class="space-y-2">
+							<h3 class="text-sm font-semibold text-gray-800 dark:text-gray-100">Previous results</h3>
+							{#if spinHistory.length === 0}
+								<p class="text-xs text-gray-500 dark:text-gray-400">No previous results recorded yet.</p>
+							{:else}
+								<ul class="space-y-1 max-h-48 overflow-y-auto pr-1 text-xs">
+									{#each spinHistory as snapshot}
+										{@const results = getResultsFromSnapshot(snapshot)}
+										<li class="rounded-md bg-gray-50 px-2 py-1 dark:bg-gray-800">
+											<span class="text-gray-800 dark:text-gray-100">
+												{#if results.length > 0}
+													{results.map(([value, count]) => `${value}${count > 1 ? "x" + count : ""}`).join(', ')}
+												{:else}
+													(No results)
+												{/if}
+											</span>
+										</li>
+									{/each}
+								</ul>
+							{/if}
 						</div>
 					</div>
 				{/if}
