@@ -4,6 +4,9 @@
 
 A customizable, animated spinner component for Svelte applications.
 
+## Demo
+I put up a demo app for my son to use to make custom spinners for his schoolwork. You can try it out [here](https://rudeboy.dev/ultimate-spinner).
+
 ## Installation
 
 ```bash
