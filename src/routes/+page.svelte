@@ -14,7 +14,14 @@
 	 * @property {string[]} items - The list of items in the spinner
 	 */
 
+	/**
+	 * @typedef {Object} CustomSet
+	 * @property {string} name - Display name of the custom combination
+	 * @property {SpinnerConfig[]} spinners - Spinners included in the combination
+	 */
+
 	const defaultItems = 'item One\nitem Two\nitem Three\nitem Four';
+	const STORAGE_KEY = 'ultimate-spinner-state-v1';
 
 	/** Used to temporarily store the title and items when editing a spinner
 	 * @type {string}
@@ -36,9 +43,22 @@
 	let spinnerValues = $state([]);
 	let showStats = $state(false);
 	let activeTab = $state('values');
+	/** @type {CustomSet[]} */
+	let customSets = $state([]);
+	let customSetName = $state('');
+	let importJson = $state('');
+	let exportJson = $state('');
+	let customSelection = $state([]);
+	let isExportMode = $state(false);
 
 	/** @type {HTMLDialogElement} */
 	let dialog;
+	/** @type {HTMLDialogElement} */
+	let importDialog;
+	/** @type {HTMLDialogElement} */
+	let exportDialog;
+	/** @type {HTMLDialogElement} */
+	let saveDialog;
 
 	/** @type {import('$lib/Spinner.svelte').default[]} */
 	let spinnerComponents = [];
@@ -73,6 +93,30 @@
 	function deleteSpinner(index) {
 		spinners = spinners.filter((_, i) => i !== index);
 		spinnerValues = spinnerValues.filter((_, i) => i !== index);
+	}
+
+	/**
+	 * Duplicates a spinner at the specified index
+	 * @param {number} index - Index of the spinner to duplicate
+	 */
+	function duplicateSpinner(index) {
+		const original = spinners[index];
+		if (!original) return;
+		const clonedSpinner = {
+			title: original.title,
+			items: [...original.items]
+		};
+		spinners = [
+			...spinners.slice(0, index + 1),
+			clonedSpinner,
+			...spinners.slice(index + 1)
+		];
+		const originalValue = spinnerValues[index] ?? null;
+		spinnerValues = [
+			...spinnerValues.slice(0, index + 1),
+			originalValue,
+			...spinnerValues.slice(index + 1)
+		];
 	}
 
 	/**
@@ -261,12 +305,170 @@
 		spinnerValues = new Array(spinners.length).fill(null);
 	}
 
+	/**
+	 * Saves the current set of spinners as a named custom combination
+	 */
+	function saveCurrentAsCustom() {
+		if (!spinners.length) return;
+		const name = customSetName.trim() || `Custom Set ${customSets.length + 1}`;
+		const snapshot = spinners.map((s) => ({
+			title: s.title,
+			items: [...s.items]
+		}));
+		customSets = [...customSets, { name, spinners: snapshot }];
+		customSetName = '';
+		if (saveDialog) {
+			saveDialog.close();
+		}
+	}
+
+	/**
+	 * Loads a previously saved custom combination, replacing current spinners
+	 * @param {number} index
+	 */
+	function loadCustomSet(index) {
+		const set = customSets[index];
+		if (!set) return;
+		spinners = set.spinners.map((s) => ({
+			title: s.title,
+			items: [...s.items]
+		}));
+		spinnerValues = new Array(spinners.length).fill(null);
+		activeTab = 'values';
+	}
+
+	/**
+	 * Deletes a saved custom combination
+	 * @param {number} index
+	 */
+	function deleteCustomSet(index) {
+		customSets = customSets.filter((_, i) => i !== index);
+	}
+
+	function importCustomFromJson() {
+		if (!importJson.trim()) return;
+		try {
+			const parsed = JSON.parse(importJson);
+			const rawSets = Array.isArray(parsed) ? parsed : [parsed];
+			const imported = rawSets
+				.filter((s) => s)
+				.map((s, idx) => {
+					let name;
+					let rawSpinners;
+
+					if (Array.isArray(s)) {
+						name = `Imported Set ${customSets.length + idx + 1}`;
+						rawSpinners = s;
+					} else {
+						name =
+							typeof s.name === 'string' && s.name.trim().length > 0
+								? s.name
+								: `Imported Set ${customSets.length + idx + 1}`;
+						rawSpinners = Array.isArray(s.spinners) ? s.spinners : [];
+					}
+
+					const normalizedSpinners = (rawSpinners || [])
+						.filter((sp) => sp && typeof sp === 'object')
+						.map((sp) => ({
+							title: typeof sp.title === 'string' ? sp.title : '',
+							items: Array.isArray(sp.items) ? sp.items.map((it) => String(it)) : []
+						}))
+						.filter((sp) => sp.items.length > 0);
+
+					if (!normalizedSpinners.length) return null;
+					return { name, spinners: normalizedSpinners };
+				})
+				.filter((s) => s !== null);
+
+			if (imported.length > 0) {
+				customSets = [...customSets, ...imported];
+				importJson = '';
+				if (importDialog) {
+					importDialog.close();
+				}
+			}
+		} catch (e) {}
+	}
+
+	function openImportDialog() {
+		importDialog?.showModal();
+	}
+
+	function openSaveDialog() {
+		if (!spinners.length) return;
+		customSetName = '';
+		saveDialog?.showModal();
+	}
+
+	function toggleCustomSelection(index, value) {
+		customSelection[index] = value;
+	}
+
+	function openExportDialog() {
+		const selected = customSets.filter((_, i) => customSelection[i]);
+		if (!selected.length) return;
+		exportJson = JSON.stringify(selected, null, 2);
+		exportDialog?.showModal();
+	}
+
 	import { onMount } from 'svelte';
 
 	onMount(() => {
+		try {
+			if (typeof localStorage !== 'undefined') {
+				const raw = localStorage.getItem(STORAGE_KEY);
+				if (raw) {
+					const parsed = JSON.parse(raw);
+					if (Array.isArray(parsed.spinners) && Array.isArray(parsed.spinnerValues)) {
+						spinners = parsed.spinners.map((s) => ({
+							title: typeof s?.title === 'string' ? s.title : '',
+							items: Array.isArray(s?.items) ? s.items.map((it) => String(it)) : []
+						}));
+						spinnerValues = parsed.spinnerValues.map((v) =>
+							v && typeof v === 'object'
+								? {
+									title: typeof v.title === 'string' ? v.title : '',
+									value: v.value ?? null
+								}
+								: null
+						);
+						if (typeof parsed.activeTab === 'string') {
+							activeTab = parsed.activeTab;
+						}
+						if (typeof parsed.showStats === 'boolean') {
+							showStats = parsed.showStats;
+						}
+					}
+					if (Array.isArray(parsed.customSets)) {
+						customSets = parsed.customSets
+							.filter((s) => s && typeof s === 'object')
+							.map((s, idx) => ({
+								name:
+									typeof s.name === 'string' && s.name.trim().length > 0
+											? s.name
+											: `Custom Set ${idx + 1}`,
+								spinners: Array.isArray(s.spinners)
+									? s.spinners.map((sp) => ({
+											title: typeof sp?.title === 'string' ? sp.title : '',
+											items: Array.isArray(sp?.items)
+												? sp.items.map((it) => String(it))
+												: []
+										}))
+									: []
+							}));
+					}
+				}
+			}
+		} catch (e) {}
 		if (spinners.length === 0) {
 			activeTab = 'examples';
 		}
+	});
+
+	$effect(() => {
+		// Keep selection array in sync with customSets length
+		customSets;
+		customSelection = new Array(customSets.length).fill(false);
 	});
 
 	$effect(() => {
@@ -278,6 +480,21 @@
 				console.log('Total of numeric values:', total);
 			}
 		}
+	});
+
+	$effect(() => {
+		const payload = {
+			spinners,
+			spinnerValues,
+			activeTab,
+			showStats,
+			customSets
+		};
+		try {
+			if (typeof localStorage !== 'undefined') {
+				localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+			}
+		} catch (e) {}
 	});
 </script>
 
@@ -318,6 +535,7 @@
 								items={[...spinner.items]} 
 								onDelete={() => deleteSpinner(i)}
 								onConfigure={() => configureSpinner(i)}
+								onDuplicate={() => duplicateSpinner(i)}
 								onValueChange={(evt) => updateSpinnerValue(i, evt)}
 							/>
 						</div>
@@ -382,6 +600,12 @@
 						class="whitespace-nowrap px-1 py-2 text-sm font-medium {activeTab === 'stats' ? 'border-b-2 border-purple-500 text-purple-600 dark:border-purple-400 dark:text-purple-400' : 'text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'}"
 					>
 						Stats
+					</button>
+					<button
+						onclick={() => activeTab = 'custom'}
+						class="whitespace-nowrap px-1 py-2 text-sm font-medium {activeTab === 'custom' ? 'border-b-2 border-purple-500 text-purple-600 dark:border-purple-400 dark:text-purple-400' : 'text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'}"
+					>
+						Custom
 					</button>
 					<button
 						onclick={() => activeTab = 'examples'}
@@ -492,6 +716,86 @@
 						{/if}
 					</div>
 				{/if}
+			{/if}
+
+			{#if activeTab === 'custom'}
+				<div class="space-y-4">
+					<div class="flex flex-wrap items-center justify-between gap-2">
+						<div class="flex flex-wrap gap-2">
+							<button
+								onclick={openImportDialog}
+								class="rounded-md bg-purple-600 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:bg-purple-500 dark:hover:bg-purple-600"
+							>
+								Import
+							</button>
+							<button
+								onclick={openSaveDialog}
+								class="rounded-md bg-green-600 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:bg-green-500 dark:hover:bg-green-600"
+							>
+								Save combination
+							</button>
+							<button
+								onclick={() => {
+									isExportMode = !isExportMode;
+									if (!isExportMode) {
+										customSelection = new Array(customSets.length).fill(false);
+									}
+								}}
+								class="rounded-md bg-gray-200 px-3 py-2 text-xs font-medium text-gray-800 transition-colors hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 dark:bg-gray-600 dark:text-gray-100 dark:hover:bg-gray-500"
+							>
+								{isExportMode ? 'Cancel export' : 'Export'}
+							</button>
+						</div>
+						{#if isExportMode}
+							<button
+								onclick={openExportDialog}
+								class="rounded-md bg-purple-600 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:bg-purple-500 dark:hover:bg-purple-600"
+							>
+								Export as JSON
+							</button>
+						{/if}
+					</div>
+
+					<div class="space-y-2">
+						{#if customSets.length === 0}
+							<p class="text-sm text-gray-500 dark:text-gray-400">
+								No custom combinations saved yet.
+							</p>
+						{:else}
+							{#each customSets as custom, i}
+								<div class="flex items-center justify-between rounded-lg bg-gray-50 p-3 text-sm dark:bg-gray-700">
+									{#if isExportMode}
+										<div class="mr-3">
+											<input
+												type="checkbox"
+												checked={customSelection[i] || false}
+												onchange={(e) => toggleCustomSelection(i, e.currentTarget.checked)}
+											/>
+										</div>
+									{/if}
+									<div class="flex-1">
+										<p class="font-medium text-gray-900 dark:text-white">{custom.name}</p>
+										<p class="text-xs text-gray-600 dark:text-gray-300">{custom.spinners.length} spinners</p>
+									</div>
+									<div class="flex gap-2">
+										<button
+											onclick={() => loadCustomSet(i)}
+											class="rounded-md bg-purple-600 px-2 py-1 text-xs font-medium text-white transition-colors hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:bg-purple-500 dark:hover:bg-purple-600"
+										>
+											Load
+										</button>
+										<button
+											onclick={() => deleteCustomSet(i)}
+											class="rounded-md bg-gray-200 px-2 py-1 text-xs font-medium text-gray-800 transition-colors hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 dark:bg-gray-600 dark:text-gray-100 dark:hover:bg-gray-500"
+										>
+											Delete
+										</button>
+									</div>
+								</div>
+							{/each}
+						{/if}
+					</div>
+				</div>
 			{/if}
 
 			{#if activeTab === 'examples'}
@@ -623,5 +927,138 @@
 				{editingSpinnerIndex >= 0 ? 'Update' : 'Add'} Spinner
 			</button>
 		</form>
+	</div>
+</dialog>
+
+<dialog
+	bind:this={saveDialog}
+	class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl backdrop:bg-black backdrop:bg-opacity-50 dark:bg-gray-800"
+>
+	<div class="relative">
+		<button
+			onclick={() => saveDialog?.close()}
+			aria-label="Close save combination dialog"
+			class="absolute right-0 top-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+		>
+			<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="M6 18L18 6M6 6l12 12"
+				/>
+			</svg>
+		</button>
+		<h2 class="mb-4 text-xl font-bold text-gray-800 dark:text-gray-100">Save Current Combination</h2>
+		<p class="mb-3 text-sm text-gray-600 dark:text-gray-300">
+			Give this set of spinners a name so you can reuse it later from the Custom tab.
+		</p>
+		<div class="space-y-4">
+			<input
+				class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-500 transition-colors focus:border-purple-500 focus:ring-2 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+				type="text"
+				placeholder="Custom set name (optional)"
+				autofocus={true}
+				bind:value={customSetName}
+			/>
+			<div class="flex justify-end gap-2">
+				<button
+					onclick={() => saveDialog?.close()}
+					class="rounded-md bg-gray-200 px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 dark:bg-gray-600 dark:text-gray-100 dark:hover:bg-gray-500"
+				>
+					Cancel
+				</button>
+				<button
+					onclick={saveCurrentAsCustom}
+					class="rounded-md bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:bg-purple-500 dark:hover:bg-purple-600"
+				>
+					Save Combination
+				</button>
+			</div>
+		</div>
+	</div>
+</dialog>
+
+<dialog
+	bind:this={importDialog}
+	class="w-full max-w-xl rounded-lg bg-white p-6 shadow-xl backdrop:bg-black backdrop:bg-opacity-50 dark:bg-gray-800"
+>
+	<div class="relative">
+		<button
+			onclick={() => importDialog?.close()}
+			aria-label="Close import dialog"
+			class="absolute right-0 top-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+		>
+			<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="M6 18L18 6M6 6l12 12"
+				/>
+			</svg>
+		</button>
+		<h2 class="mb-4 text-xl font-bold text-gray-800 dark:text-gray-100">Import Custom Presets</h2>
+		<p class="mb-3 text-sm text-gray-600 dark:text-gray-300">
+			Paste JSON for a single custom set, an array of custom sets, or an array of spinner arrays.
+		</p>
+		<textarea
+			class="w-full min-h-[250px] rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-500 transition-colors focus:border-purple-500 focus:ring-2 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+			placeholder='Example: &#123;"name":"My Set","spinners":[&#123;"title":"Spinner","items":["A","B"]&#125;]&#125;'
+			bind:value={importJson}
+		></textarea>
+		<div class="mt-4 flex justify-end gap-2">
+			<button
+				onclick={() => importDialog?.close()}
+				class="rounded-md bg-gray-200 px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 dark:bg-gray-600 dark:text-gray-100 dark:hover:bg-gray-500"
+			>
+				Cancel
+			</button>
+			<button
+				onclick={importCustomFromJson}
+				class="rounded-md bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:bg-purple-500 dark:hover:bg-purple-600"
+			>
+				Import
+			</button>
+		</div>
+	</div>
+</dialog>
+
+<dialog
+	bind:this={exportDialog}
+	class="w-full max-w-xl rounded-lg bg-white p-6 shadow-xl backdrop:bg-black backdrop:bg-opacity-50 dark:bg-gray-800"
+>
+	<div class="relative">
+		<button
+			onclick={() => exportDialog?.close()}
+			aria-label="Close export dialog"
+			class="absolute right-0 top-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+		>
+			<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="M6 18L18 6M6 6l12 12"
+				/>
+			</svg>
+		</button>
+		<h2 class="mb-4 text-xl font-bold text-gray-800 dark:text-gray-100">Export Custom Presets</h2>
+		<p class="mb-3 text-sm text-gray-600 dark:text-gray-300">
+			Copy this JSON to share or reuse the selected custom presets.
+		</p>
+		<textarea
+			class="w-full min-h-[250px] rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+			readonly
+			bind:value={exportJson}
+		></textarea>
+		<div class="mt-4 flex justify-end">
+			<button
+				onclick={() => exportDialog?.close()}
+				class="rounded-md bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:bg-purple-500 dark:hover:bg-purple-600"
+			>
+				Close
+			</button>
+		</div>
 	</div>
 </dialog>

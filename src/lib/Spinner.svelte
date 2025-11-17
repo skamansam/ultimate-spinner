@@ -6,6 +6,7 @@
 		title = 'New Spinner!',
 		onDelete = () => console.warn('No handler provided for onDelete event'),
 		onConfigure = () => console.warn('No handler provided for onConfigure event'),
+		onDuplicate = () => console.warn('No handler provided for onDuplicate event'),
 		onValueChange = (value) => console.warn('No handler provided for onValueChange event', value)
 	} = $props();
 
@@ -95,26 +96,22 @@
 			</svg>
 		</button>
 		<span>{title || 'New Spinner!'}</span>
-		<button
-			class="p-1 transition-colors hover:text-purple-500 dark:hover:text-purple-400"
-			aria-label="Configure spinner"
-			onclick={onConfigure}
-		>
-			<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-				<path
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					stroke-width="2"
-					d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-				/>
-				<path
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					stroke-width="2"
-					d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-				/>
-			</svg>
-		</button>
+		<div class="flex items-center gap-1">
+			<button
+				class="p-1 transition-colors hover:text-blue-500 dark:hover:text-blue-400"
+				aria-label="Duplicate spinner"
+				onclick={onDuplicate}
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 512 512"><rect width="336" height="336" x="128" y="128" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="32" rx="57" ry="57"/><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="m383.5 128l.5-24a56.16 56.16 0 0 0-56-56H112a64.19 64.19 0 0 0-64 64v216a56.16 56.16 0 0 0 56 56h24m168-168v160m80-80H216"/></svg>
+			</button>
+			<button
+				class="p-1 transition-colors hover:text-purple-500 dark:hover:text-purple-400"
+				aria-label="Configure spinner"
+				onclick={onConfigure}
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="currentColor" d="M6 9.5A2 2 0 0 1 7.937 11H13.5a.5.5 0 0 1 .09.992L13.5 12l-5.563.001a2 2 0 0 1-3.874 0L2.5 12a.5.5 0 0 1-.09-.992L2.5 11h1.563A2 2 0 0 1 6 9.5m0 1a1 1 0 1 0 0 2a1 1 0 0 0 0-2m4-8A2 2 0 0 1 11.937 4H13.5a.5.5 0 0 1 .09.992L13.5 5l-1.563.001a2 2 0 0 1-3.874 0L2.5 5a.5.5 0 0 1-.09-.992L2.5 4h5.563A2 2 0 0 1 10 2.5m0 1a1 1 0 1 0 0 2a1 1 0 0 0 0-2"/></svg>
+			</button>
+		</div>
 	</div>
 	<ul
 		bind:this={spinnerElement}
